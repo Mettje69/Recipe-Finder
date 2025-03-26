@@ -17,7 +17,7 @@ pip install fastapi uvicorn
 ```
 python -m uvicorn main:app --reload
 ```
-http://127.0.0.1:8000
+Visit http://127.0.0.1:8000
 
 ## Frontend
 ```
@@ -26,4 +26,4 @@ npm install --legacy-peer-deps
 ```
 npm run dev
 ```
-http://localhost:5173/
+Visit http://localhost:5173/
