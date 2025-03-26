@@ -32,12 +32,20 @@ Visit <http://localhost:5173> to view the application.
 
 ## Manual start
 
-## backend
+## Backend
+```
 pip install fastapi uvicorn
+```
+```
 python -m uvicorn main:app --reload
+```
 http://127.0.0.1:8000
 
-## frontend
+## Frontend
+```
 npm install --legacy-peer-deps
+```
+```
 npm run dev
+```
 http://localhost:5173/
