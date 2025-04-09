@@ -135,6 +135,68 @@ const RecipeFinder = () => {
     }
   }, [toast])
 
+  // Add global keyboard event listener to capture all keyboard input
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: Event) => {
+      // Cast to KeyboardEvent with proper type handling
+      const keyboardEvent = e as unknown as KeyboardEvent;
+      
+      // Ignore if already focused on an input or textarea
+      if (keyboardEvent.target instanceof HTMLInputElement || keyboardEvent.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
+      // Ignore special keys and shortcuts
+      if (
+        keyboardEvent.ctrlKey || 
+        keyboardEvent.altKey || 
+        keyboardEvent.metaKey || 
+        keyboardEvent.key === 'Tab' || 
+        keyboardEvent.key === 'Escape' || 
+        keyboardEvent.key === 'F1' || 
+        keyboardEvent.key === 'F2' || 
+        keyboardEvent.key === 'F3' || 
+        keyboardEvent.key === 'F4' || 
+        keyboardEvent.key === 'F5' || 
+        keyboardEvent.key === 'F6' || 
+        keyboardEvent.key === 'F7' || 
+        keyboardEvent.key === 'F8' || 
+        keyboardEvent.key === 'F9' || 
+        keyboardEvent.key === 'F10' || 
+        keyboardEvent.key === 'F11' || 
+        keyboardEvent.key === 'F12'
+      ) {
+        return;
+      }
+      
+      // Focus the search input and append the pressed key
+      if (inputRef.current) {
+        // Focus the input
+        inputRef.current.focus();
+        
+        // Only append printable characters
+        if (keyboardEvent.key.length === 1) {
+          // Prevent the default behavior to avoid duplicate input
+          keyboardEvent.preventDefault();
+          
+          // Directly update the search term state
+          setSearchTerm(prev => prev + keyboardEvent.key);
+          
+          // Show suggestions
+          setShowSuggestions(true);
+        }
+      }
+    };
+    
+    // Add event listener to the document
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    
+    // Clean up the event listener on component unmount
+    return () => {
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, []);
+
   // Memoize the filtered ingredients to prevent recalculation on every render
   const filteredIngredients = useMemo(() => {
     if (!searchTerm.trim()) return [];
@@ -700,7 +762,6 @@ const RecipeFinder = () => {
         borderColor="gray.200"
         _hover={{ borderColor: "orange.200", boxShadow: "md" }}
         transition="all 0.2s ease-in-out"
-        onClick={() => inputRef.current?.focus()}
       >
         <InputGroup size="lg">
           <InputLeftElement 
