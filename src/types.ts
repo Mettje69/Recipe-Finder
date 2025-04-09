@@ -23,4 +23,6 @@ export interface RecipeFilters {
   maxCookTime?: number;
   minServings?: number;
   maxServings?: number;
-} 
+}
+
+export type SortOption = 'name' | 'cookTime' | 'difficulty' | 'ingredients'; 

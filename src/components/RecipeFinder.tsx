@@ -43,14 +43,13 @@ import {
   useOutsideClick,
 } from '@chakra-ui/react'
 import { ingredientCategories } from '../data/ingredients'
-import { Recipe, RecipeFilters } from '../types'
+import { Recipe, RecipeFilters, SortOption } from '../types'
 import { findRecipesByIngredients } from '../data/recipes'
 import RecipeModal from './RecipeModal'
 import { FilterIcon } from './Icons'
 import { SearchIcon, CheckIcon, WarningIcon, ChevronDownIcon, AddIcon } from '@chakra-ui/icons'
 import { api } from '../services/api'
-
-type SortOption = 'name' | 'cookTime' | 'difficulty' | 'ingredients'
+import React from 'react'
 
 const RecipeFinder = () => {
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([])
@@ -64,18 +63,46 @@ const RecipeFinder = () => {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(0)
   const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
   const RECIPES_PER_PAGE = 12
   const { isOpen, onOpen, onClose } = useDisclosure()
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
   const toast = useToast()
   const searchTimeoutRef = useRef<number | null>(null)
+  const filterTimeoutRef = useRef<number | null>(null)
 
   // Extract all ingredients from categories for search
   const allIngredients = useMemo(() => {
     return ingredientCategories.flatMap(category => category.ingredients)
   }, [])
+
+  // Sort recipes with highest match percentage first
+  const sortRecipes = (recipesToSort: Recipe[], sortBy: SortOption) => {
+    try {
+      return [...recipesToSort].sort((a, b) => {
+        switch (sortBy) {
+          case 'name':
+            return a.name.localeCompare(b.name);
+          case 'cookTime':
+            const aTime = parseInt(a.cookTime.split(' ')[0]);
+            const bTime = parseInt(b.cookTime.split(' ')[0]);
+            return aTime - bTime;
+          case 'difficulty':
+            const difficultyOrder = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+            return difficultyOrder[a.difficulty as keyof typeof difficultyOrder] - 
+                   difficultyOrder[b.difficulty as keyof typeof difficultyOrder];
+          case 'ingredients':
+            return a.ingredients.length - b.ingredients.length;
+          default:
+            return 0;
+        }
+      });
+    } catch (error) {
+      console.error('Error sorting recipes:', error);
+      return recipesToSort;
+    }
+  };
 
   // Load initial recipes when component mounts
   useEffect(() => {
@@ -101,150 +128,123 @@ const RecipeFinder = () => {
     }
 
     loadInitialRecipes()
+    
+    // Focus the search input when component mounts
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
   }, [toast])
 
-  // Filter and sort recipes when selected ingredients, filters, or sort option changes
-  useEffect(() => {
-    const filterAndSortRecipes = async () => {
-      setIsLoading(true)
+  // Memoize the filtered ingredients to prevent recalculation on every render
+  const filteredIngredients = useMemo(() => {
+    if (!searchTerm.trim()) return [];
+    const searchTermLower = searchTerm.toLowerCase();
+    return allIngredients
+      .filter(ingredient => 
+        ingredient.toLowerCase().includes(searchTermLower)
+      )
+      .slice(0, 10);
+  }, [allIngredients, searchTerm]);
+
+  // Debounced filter and sort function
+  const debouncedFilterAndSort = useCallback((
+    selectedIngredients: string[], 
+    filters: RecipeFilters, 
+    sortBy: SortOption,
+    allRecipes: Recipe[]
+  ) => {
+    if (filterTimeoutRef.current) {
+      clearTimeout(filterTimeoutRef.current);
+    }
+
+    filterTimeoutRef.current = window.setTimeout(() => {
+      setIsLoading(true);
       try {
-        let filteredRecipes: Recipe[] = []
-        
+        // Start with all recipes
+        let filteredRecipes = [...allRecipes];
+
+        // Apply ingredient filtering only if ingredients are selected
         if (selectedIngredients.length > 0) {
-          // Use our new findRecipesByIngredients function
-          filteredRecipes = findRecipesByIngredients(selectedIngredients)
-          
-          // Apply additional filters
-          if (filters.difficulty) {
-            filteredRecipes = filteredRecipes.filter(recipe => recipe.difficulty === filters.difficulty)
-          }
-          
-          if (filters.category) {
-            filteredRecipes = filteredRecipes.filter(recipe => recipe.category === filters.category)
-          }
-          
-          if (filters.maxCookTime) {
-            filteredRecipes = filteredRecipes.filter(recipe => {
-              const cookTime = parseInt(recipe.cookTime.split(' ')[0])
-              return !isNaN(cookTime) && cookTime <= filters.maxCookTime!
-            })
-          }
-          
-          if (filters.minServings) {
-            filteredRecipes = filteredRecipes.filter(recipe => recipe.servings >= filters.minServings!)
-          }
-          
-          if (filters.maxServings) {
-            filteredRecipes = filteredRecipes.filter(recipe => recipe.servings <= filters.maxServings!)
-          }
-        } else {
-          // If no ingredients selected, show all recipes with filters applied
-          filteredRecipes = recipes
-          
-          if (filters.difficulty) {
-            filteredRecipes = filteredRecipes.filter(recipe => recipe.difficulty === filters.difficulty)
-          }
-          
-          if (filters.category) {
-            filteredRecipes = filteredRecipes.filter(recipe => recipe.category === filters.category)
-          }
-          
-          if (filters.maxCookTime) {
-            filteredRecipes = filteredRecipes.filter(recipe => {
-              const cookTime = parseInt(recipe.cookTime.split(' ')[0])
-              return !isNaN(cookTime) && cookTime <= filters.maxCookTime!
-            })
-          }
-          
-          if (filters.minServings) {
-            filteredRecipes = filteredRecipes.filter(recipe => recipe.servings >= filters.minServings!)
-          }
-          
-          if (filters.maxServings) {
-            filteredRecipes = filteredRecipes.filter(recipe => recipe.servings <= filters.maxServings!)
-          }
+          const ingredientsLower = selectedIngredients.map(i => i.toLowerCase());
+          filteredRecipes = filteredRecipes.filter(recipe => {
+            // Check if any of the selected ingredients are in the recipe's ingredients list
+            return ingredientsLower.some(selectedIngredient => 
+              recipe.ingredients.some(recipeIngredient => 
+                recipeIngredient.toLowerCase().includes(selectedIngredient)
+              )
+            );
+          });
         }
-        
+
+        // Apply additional filters
+        if (filters.difficulty) {
+          filteredRecipes = filteredRecipes.filter(recipe => 
+            recipe.difficulty === filters.difficulty
+          );
+        }
+
+        if (filters.category) {
+          filteredRecipes = filteredRecipes.filter(recipe => 
+            recipe.category === filters.category
+          );
+        }
+
+        if (filters.maxCookTime) {
+          filteredRecipes = filteredRecipes.filter(recipe => {
+            const cookTime = parseInt(recipe.cookTime.split(' ')[0]);
+            return !isNaN(cookTime) && cookTime <= filters.maxCookTime!;
+          });
+        }
+
         // Sort recipes
-        switch (sortBy) {
-          case 'name':
-            filteredRecipes.sort((a, b) => a.name.localeCompare(b.name))
-            break
-          case 'cookTime':
-            filteredRecipes.sort((a, b) => {
-              const timeA = parseInt(a.cookTime.split(' ')[0])
-              const timeB = parseInt(b.cookTime.split(' ')[0])
-              return timeA - timeB
-            })
-            break
-          case 'difficulty':
-            const difficultyOrder = { 'Easy': 0, 'Medium': 1, 'Hard': 2 }
-            filteredRecipes.sort((a, b) => {
-              const diffA = difficultyOrder[a.difficulty || 'Medium']
-              const diffB = difficultyOrder[b.difficulty || 'Medium']
-              return diffA - diffB
-            })
-            break
-          case 'ingredients':
-            filteredRecipes.sort((a, b) => a.ingredients.length - b.ingredients.length)
-            break
-        }
+        const sortedRecipes = sortRecipes(filteredRecipes, sortBy);
         
-        // Update displayed recipes with pagination
-        setDisplayedRecipes(filteredRecipes.slice(0, page * RECIPES_PER_PAGE))
-        setHasMore(filteredRecipes.length > page * RECIPES_PER_PAGE)
+        setRecipes(sortedRecipes);
+        setDisplayedRecipes(sortedRecipes.slice(0, RECIPES_PER_PAGE));
+        setHasMore(sortedRecipes.length > RECIPES_PER_PAGE);
+        setPage(1);
       } catch (error) {
-        console.error('Error filtering recipes:', error)
-        toast({
-          title: "Error filtering recipes",
-          description: "There was a problem filtering recipes. Please try again.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        })
+        console.error('Error filtering recipes:', error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    }, 150); // Debounce delay
+  }, [sortRecipes]);
     
-    filterAndSortRecipes()
-  }, [selectedIngredients, filters, sortBy, recipes, page, toast])
-
-  // Add global keyboard event listener to focus input when any key is pressed
+  // Update recipes when filters or ingredients change
   useEffect(() => {
-    const handleGlobalKeyDown = (e: globalThis.KeyboardEvent) => {
-      // Ignore if already focused or if it's a special key combination
-      if (document.activeElement === inputRef.current || 
-          e.ctrlKey || e.altKey || e.metaKey || 
-          e.key === 'Tab' || e.key === 'Escape') {
-        return;
-      }
-      
-      // Focus the input when any regular key is pressed
-      if (e.key.length === 1 || e.key === 'Backspace' || e.key === 'Delete') {
-        inputRef.current?.focus();
+    const loadAndFilterRecipes = async () => {
+      try {
+        const allRecipes = await api.getAllRecipes();
+        debouncedFilterAndSort(selectedIngredients, filters, sortBy, allRecipes);
+      } catch (error) {
+        console.error('Error loading recipes:', error);
       }
     };
 
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleGlobalKeyDown);
-    };
-  }, []);
+    loadAndFilterRecipes();
+  }, [selectedIngredients, filters, sortBy, debouncedFilterAndSort]);
 
-  const handleIngredientClick = (ingredient: string) => {
+  const handleFilterChange = (filterKey: keyof RecipeFilters, value: string | number) => {
+    const newFilters = { ...filters, [filterKey]: value };
+    setFilters(newFilters);
+  };
+
+  const handleSortChange = (newSortBy: SortOption) => {
+    setSortBy(newSortBy);
+  };
+
+  const handleIngredientClick = useCallback((ingredient: string) => {
     if (!selectedIngredients.includes(ingredient)) {
-      const newIngredients = [...selectedIngredients, ingredient]
-      setSelectedIngredients(newIngredients)
-      searchRecipes(newIngredients, filters)
+      setSelectedIngredients(prev => [...prev, ingredient]);
+      setSearchTerm('');
+      setShowSuggestions(false);
     }
-  }
+  }, [selectedIngredients]);
 
-  const handleRemoveIngredient = (ingredient: string) => {
-    const newIngredients = selectedIngredients.filter(i => i !== ingredient)
-    setSelectedIngredients(newIngredients)
-    searchRecipes(newIngredients, filters)
-  }
+  const handleRemoveIngredient = useCallback((ingredient: string) => {
+    setSelectedIngredients(prev => prev.filter(i => i !== ingredient));
+  }, []);
 
   const searchRecipes = async (ingredients: string[], filters: RecipeFilters) => {
     setIsLoading(true)
@@ -281,12 +281,6 @@ const RecipeFinder = () => {
     }
   }
 
-  const handleFilterChange = (filterKey: keyof RecipeFilters, value: string | number) => {
-    const newFilters = { ...filters, [filterKey]: value }
-    setFilters(newFilters)
-    searchRecipes(selectedIngredients, newFilters)
-  }
-
   const handleRecipeClick = (recipe: Recipe) => {
     setSelectedRecipe(recipe)
     onOpen()
@@ -294,43 +288,54 @@ const RecipeFinder = () => {
 
   // Debounced search term update
   const handleSearchTermChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchTerm(value)
-    setHighlightedIndex(0)
+    const value = e.target.value;
+    setSearchTerm(value);
+    setHighlightedIndex(0);
     
-    // Show suggestions if there's a search term
     if (value.trim() !== '') {
-      setShowSuggestions(true)
+      setShowSuggestions(true);
     } else {
-      setShowSuggestions(false)
+      setShowSuggestions(false);
     }
-    
-    // Clear previous timeout
-    if (searchTimeoutRef.current !== null) {
-      window.clearTimeout(searchTimeoutRef.current)
-    }
-    
-    // Set new timeout
-    searchTimeoutRef.current = window.setTimeout(() => {
-      // If search term is empty, show all ingredients
-      if (value.trim() === '') {
-        return
-      }
-    }, 300)
-  }
+  };
 
   // Handle key press in search input
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
       
+      // Check if the search term matches an already selected ingredient
+      const exactMatch = selectedIngredients.find(
+        ingredient => ingredient.toLowerCase() === searchTerm.toLowerCase()
+      );
+      
+      if (exactMatch) {
+        // If it's an exact match, remove the ingredient
+        handleRemoveIngredient(exactMatch);
+        setSearchTerm('');
+        setShowSuggestions(false);
+        return;
+      }
+      
       // If suggestions are shown, select the highlighted suggestion
       if (showSuggestions && filteredIngredients.length > 0) {
         const selectedIngredient = filteredIngredients[highlightedIndex]
         if (selectedIngredient) {
-          handleIngredientClick(selectedIngredient)
-          setSearchTerm('')
-          setShowSuggestions(false)
+          // Check if the ingredient is already selected
+          const isAlreadySelected = selectedIngredients.some(
+            selected => selected.toLowerCase() === selectedIngredient.toLowerCase()
+          );
+          
+          if (isAlreadySelected) {
+            // If it's already selected, remove it
+            handleRemoveIngredient(selectedIngredient);
+          } else {
+            // If it's not selected, add it
+            setSelectedIngredients(prev => [...prev, selectedIngredient]);
+          }
+          
+          setSearchTerm('');
+          setShowSuggestions(false);
         }
       }
     } else if (e.key === 'ArrowDown') {
@@ -351,17 +356,6 @@ const RecipeFinder = () => {
     ref: suggestionsRef as React.RefObject<HTMLElement>,
     handler: () => setShowSuggestions(false),
   })
-
-  // Filter ingredients based on search term
-  const filteredIngredients = useMemo(() => {
-    if (!searchTerm.trim()) return []
-    
-    return allIngredients
-      .filter((ingredient: string) => 
-        ingredient.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .slice(0, 10) // Limit to 10 suggestions for better performance
-  }, [allIngredients, searchTerm])
 
   // Calculate ingredient match information for a recipe
   const getIngredientMatchInfo = (recipe: Recipe) => {
@@ -385,103 +379,21 @@ const RecipeFinder = () => {
       return {
         matchedCount: matchedIngredients.length,
         totalSelected: selectedIngredients.length,
-        matchPercentage,
-        missingIngredients: missingIngredients.slice(0, 5), // Show only first 5 missing ingredients
-        hasMoreMissing: missingIngredients.length > 5
+        missingIngredients: missingIngredients.slice(0, 3),
+        hasMoreMissing: missingIngredients.length > 3,
+        matchPercentage
       };
     } catch (error) {
-      console.error("Error calculating match info:", error);
-      // Return safe default values if calculation fails
+      console.error('Error calculating match info:', error);
       return {
         matchedCount: 0,
         totalSelected: selectedIngredients.length,
-        matchPercentage: 0,
         missingIngredients: [],
-        hasMoreMissing: false
+        hasMoreMissing: false,
+        matchPercentage: 0
       };
     }
   };
-
-  // Sort recipes with highest match percentage first
-  const sortRecipes = (recipesToSort: Recipe[]) => {
-    try {
-      return [...recipesToSort].sort((a, b) => {
-        // If ingredients are selected, prioritize match percentage
-        if (selectedIngredients.length > 0) {
-          const matchInfoA = getIngredientMatchInfo(a);
-          const matchInfoB = getIngredientMatchInfo(b);
-          
-          // Calculate complexity score based on number of ingredients
-          const complexityScoreA = a.ingredients.length;
-          const complexityScoreB = b.ingredients.length;
-          
-          // Check if basic ingredients are selected
-          const basicIngredients = ['egg', 'eggs', 'butter', 'milk', 'flour', 'sugar', 'salt', 'pepper', 'oil', 'olive oil'];
-          const hasBasicIngredients = selectedIngredients.some(ingredient => 
-            basicIngredients.some(basic => ingredient.toLowerCase().includes(basic))
-          );
-          
-          // Adjust match percentage based on ingredient count and difficulty
-          let adjustedMatchA = matchInfoA.matchPercentage;
-          let adjustedMatchB = matchInfoB.matchPercentage;
-          
-          // For basic ingredients or few selections, strongly prefer simpler recipes
-          if (hasBasicIngredients || selectedIngredients.length <= 2) {
-            // Penalize more ingredients
-            adjustedMatchA *= (1 - (complexityScoreA / 15));
-            adjustedMatchB *= (1 - (complexityScoreB / 15));
-            
-            // Further penalize harder recipes
-            const difficultyPenaltyA = a.difficulty === 'Hard' ? 0.5 : a.difficulty === 'Medium' ? 0.8 : 1;
-            const difficultyPenaltyB = b.difficulty === 'Hard' ? 0.5 : b.difficulty === 'Medium' ? 0.8 : 1;
-            
-            adjustedMatchA *= difficultyPenaltyA;
-            adjustedMatchB *= difficultyPenaltyB;
-          } 
-          // For more ingredients selected, prefer more complex recipes
-          else if (selectedIngredients.length >= 3) {
-            // Reward more ingredients
-            adjustedMatchA *= (1 + (complexityScoreA / 30));
-            adjustedMatchB *= (1 + (complexityScoreB / 30));
-          }
-          
-          // Sort by adjusted match percentage (highest first)
-          if (adjustedMatchA !== adjustedMatchB) {
-            return adjustedMatchB - adjustedMatchA;
-          }
-          
-          // If adjusted match percentages are equal, sort by number of matched ingredients
-          if (matchInfoA.matchedCount !== matchInfoB.matchedCount) {
-            return matchInfoB.matchedCount - matchInfoA.matchedCount;
-          }
-        }
-        
-        // Default sorting based on user selection
-        switch (sortBy) {
-          case 'name':
-            return a.name.localeCompare(b.name)
-          case 'cookTime':
-            return parseInt(a.cookTime) - parseInt(b.cookTime)
-          case 'difficulty':
-            const difficultyOrder: Record<string, number> = { 'Easy': 1, 'Medium': 2, 'Hard': 3 }
-            return (difficultyOrder[a.difficulty || 'Easy'] || 0) - (difficultyOrder[b.difficulty || 'Easy'] || 0)
-          case 'ingredients':
-            return a.ingredients.length - b.ingredients.length
-          default:
-            return 0
-        }
-      });
-    } catch (error) {
-      console.error("Error sorting recipes:", error);
-      // Return unsorted recipes if sorting fails
-      return recipesToSort;
-    }
-  }
-
-  const handleSortChange = (newSortBy: SortOption) => {
-    setSortBy(newSortBy)
-    setRecipes(prev => sortRecipes(prev))
-  }
 
   // Load more recipes when "See more" is clicked
   const handleLoadMore = () => {
@@ -495,27 +407,267 @@ const RecipeFinder = () => {
     setHasMore(endIndex < recipes.length)
   }
 
-  // Apply sorting whenever recipes or selectedIngredients change
-  useEffect(() => {
-    if (recipes.length > 0) {
-      try {
-        const sortedRecipes = sortRecipes(recipes);
-        setRecipes(sortedRecipes);
-        // Update displayed recipes with the first page of sorted recipes
-        setDisplayedRecipes(sortedRecipes.slice(0, RECIPES_PER_PAGE));
-        setHasMore(sortedRecipes.length > RECIPES_PER_PAGE);
-        setPage(1);
-      } catch (error) {
-        console.error("Error sorting recipes:", error);
-        // Don't update recipes if sorting fails
-      }
-    }
-  }, [selectedIngredients, sortBy]);
-
   // Create a memoized sorted recipes array
   const sortedRecipes = useMemo(() => {
-    return sortRecipes(recipes);
+    return sortRecipes(recipes, sortBy);
   }, [recipes, selectedIngredients, sortBy]);
+
+  // Add a memoized RecipeCard component
+  const RecipeCard = React.memo(({ 
+    recipe, 
+    selectedIngredients, 
+    onRecipeClick 
+  }: { 
+    recipe: Recipe, 
+    selectedIngredients: string[], 
+    onRecipeClick: (recipe: Recipe) => void 
+  }) => {
+    const matchInfo = useMemo(() => {
+      try {
+        const matchedIngredients = selectedIngredients.filter(selectedIngredient => 
+          recipe.ingredients.some(recipeIngredient => 
+            recipeIngredient.toLowerCase().includes(selectedIngredient.toLowerCase())
+          )
+        );
+        
+        const missingIngredients = recipe.ingredients.filter(recipeIngredient => 
+          !selectedIngredients.some(selectedIngredient => 
+            recipeIngredient.toLowerCase().includes(selectedIngredient.toLowerCase())
+          )
+        );
+        
+        const matchPercentage = selectedIngredients.length > 0 
+          ? Math.round((matchedIngredients.length / selectedIngredients.length) * 100) 
+          : 0;
+        
+        return {
+          matchedCount: matchedIngredients.length,
+          totalSelected: selectedIngredients.length,
+          missingIngredients: missingIngredients.slice(0, 3),
+          hasMoreMissing: missingIngredients.length > 3,
+          matchPercentage
+        };
+      } catch (error) {
+        console.error('Error calculating match info:', error);
+        return {
+          matchedCount: 0,
+          totalSelected: selectedIngredients.length,
+          missingIngredients: [],
+          hasMoreMissing: false,
+          matchPercentage: 0
+        };
+      }
+    }, [recipe.ingredients, selectedIngredients]);
+
+    return (
+      <Box
+        borderWidth="1px"
+        borderRadius="xl"
+        overflow="hidden"
+        w="100%"
+        pr="0"
+        bg="white"
+        boxShadow="sm"
+        sx={{
+          '&:hover': {
+            boxShadow: "lg"
+          }
+        }}
+        cursor="pointer"
+        onClick={() => onRecipeClick(recipe)}
+      >
+        <Box position="relative">
+          <Image 
+            src={recipe.image} 
+            alt={recipe.name} 
+            height="200px" 
+            width="100%"
+            objectFit="cover"
+            loading="lazy"
+          />
+          <Box
+            position="absolute"
+            top={0}
+            left={0}
+            right={0}
+            bottom={0}
+            bgGradient="linear(to-t, blackAlpha.600, transparent)"
+          />
+          <HStack 
+            position="absolute" 
+            bottom={3} 
+            left={3} 
+            spacing={2}
+          >
+            {recipe.difficulty && (
+              <Tag size="md" colorScheme={getDifficultyColor(recipe.difficulty)} variant="solid">
+                {recipe.difficulty}
+              </Tag>
+            )}
+            <Tag size="md" colorScheme="whiteAlpha" variant="solid">
+              {recipe.cookTime}
+            </Tag>
+          </HStack>
+        </Box>
+        <Box p={4}>
+          <Heading size="md" mb={2}>{recipe.name}</Heading>
+          <HStack spacing={3} color="gray.600" fontSize="sm">
+            <Text>{recipe.ingredients.length} ingredients</Text>
+            <Text>•</Text>
+            <Text>Serves {recipe.servings}</Text>
+            {recipe.category && (
+              <>
+                <Text>•</Text>
+                <Text>{recipe.category}</Text>
+              </>
+            )}
+          </HStack>
+          
+          {/* Ingredient Match Information */}
+          {selectedIngredients.length > 0 && (
+            <Box mt={3} pt={3} borderTopWidth="1px" borderColor="gray.100">
+              <Flex justify="space-between" align="center" mb={2}>
+                <Text fontSize="sm" fontWeight="medium">
+                  Your Ingredients: {matchInfo.matchedCount}/{matchInfo.totalSelected}
+                </Text>
+                <Badge 
+                  colorScheme={matchInfo.matchPercentage > 70 ? "green" : matchInfo.matchPercentage > 40 ? "yellow" : "red"}
+                  fontSize="xs"
+                >
+                  {matchInfo.matchPercentage}% match
+                </Badge>
+              </Flex>
+              <Progress 
+                value={matchInfo.matchPercentage} 
+                size="sm" 
+                colorScheme={matchInfo.matchPercentage > 70 ? "green" : matchInfo.matchPercentage > 40 ? "yellow" : "red"}
+                mb={2}
+              />
+              
+              {matchInfo.missingIngredients.length > 0 && (
+                <Box mt={2}>
+                  <Text fontSize="xs" color="gray.500" mb={1}>
+                    You'll also need:
+                  </Text>
+                  <Wrap spacing={1}>
+                    {matchInfo.missingIngredients.map((ingredient, index) => (
+                      <WrapItem key={index}>
+                        <Tag 
+                          size="xs" 
+                          colorScheme="gray" 
+                          variant="outline"
+                          borderRadius="md"
+                          px={1}
+                          py={0.5}
+                          fontSize="10px"
+                          whiteSpace="nowrap"
+                          maxW="100px"
+                          overflow="hidden"
+                          textOverflow="ellipsis"
+                        >
+                          {ingredient.split(' ').slice(-2).join(' ')}
+                        </Tag>
+                      </WrapItem>
+                    ))}
+                    {matchInfo.hasMoreMissing && (
+                      <WrapItem>
+                        <Tag 
+                          size="xs" 
+                          colorScheme="gray" 
+                          variant="outline"
+                          borderRadius="md"
+                          px={1}
+                          py={0.5}
+                          fontSize="10px"
+                        >
+                          +{recipe.ingredients.length - matchInfo.matchedCount - matchInfo.missingIngredients.length} more
+                        </Tag>
+                      </WrapItem>
+                    )}
+                  </Wrap>
+                </Box>
+              )}
+            </Box>
+          )}
+        </Box>
+      </Box>
+    );
+  });
+
+  // Memoize the recipe list rendering
+  const RecipeList = useMemo(() => {
+    if (isLoading && displayedRecipes.length === 0) {
+      return (
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 4, md: 4 }}>
+          {[1, 2, 3].map((n) => (
+            <Box key={n} borderWidth="1px" borderRadius="xl" overflow="hidden">
+              <Skeleton height="200px" />
+              <Box p={4}>
+                <Skeleton height="20px" mb={2} />
+                <Skeleton height="30px" width="100px" />
+              </Box>
+            </Box>
+          ))}
+        </SimpleGrid>
+      );
+    }
+
+    if (displayedRecipes.length === 0) {
+      return (
+        <Box 
+          textAlign="center" 
+          py={10}
+          px={6}
+          borderRadius="xl"
+          borderWidth="1px"
+          borderStyle="dashed"
+          borderColor="orange.200"
+          bg="orange.50"
+        >
+          <Text fontSize="xl" fontWeight="medium" mb={2}>No recipes found</Text>
+          <Text color="gray.600">
+            {selectedIngredients.length === 0 
+              ? "Select some ingredients to see matching recipes"
+              : "Try selecting different ingredients or adjusting the filters"}
+          </Text>
+        </Box>
+      );
+    }
+
+    return (
+      <>
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 4, md: 4 }}>
+          {displayedRecipes.map((recipe) => (
+            <Box 
+              key={recipe.id}
+              transition="opacity 0.3s ease-in-out"
+            >
+              <RecipeCard 
+                recipe={recipe}
+                selectedIngredients={selectedIngredients}
+                onRecipeClick={handleRecipeClick}
+              />
+            </Box>
+          ))}
+        </SimpleGrid>
+        
+        {hasMore && (
+          <Flex justify="center" mt={8}>
+            <Button
+              colorScheme="orange"
+              size="lg"
+              onClick={handleLoadMore}
+              isLoading={isLoading}
+              loadingText="Loading more recipes..."
+              leftIcon={<AddIcon />}
+            >
+              See More Recipes
+            </Button>
+          </Flex>
+        )}
+      </>
+    );
+  }, [displayedRecipes, selectedIngredients, isLoading, hasMore]);
 
   return (
     <VStack 
@@ -539,6 +691,7 @@ const RecipeFinder = () => {
         borderColor="gray.200"
         _hover={{ borderColor: "orange.200", boxShadow: "md" }}
         transition="all 0.2s ease-in-out"
+        onClick={() => inputRef.current?.focus()}
       >
         <InputGroup size="lg">
           <InputLeftElement 
@@ -565,6 +718,7 @@ const RecipeFinder = () => {
             _hover={{ borderColor: 'orange.200' }}
             autoFocus
             pl="60px"
+            tabIndex={0}
           />
         </InputGroup>
         
@@ -587,28 +741,40 @@ const RecipeFinder = () => {
             mt={2}
           >
             <List spacing={0}>
-              {filteredIngredients.map((ingredient: string, index: number) => (
-                <ListItem 
-                  key={ingredient}
-                  px={4}
-                  py={2}
-                  cursor="pointer"
-                  bg={index === highlightedIndex ? "orange.50" : "transparent"}
-                  _hover={{ bg: "orange.50" }}
-                  onClick={() => {
-                    handleIngredientClick(ingredient)
-                    setSearchTerm('')
-                    setShowSuggestions(false)
-                  }}
-                >
-                  <HStack>
-                    <Text>{ingredient}</Text>
-                    {index === highlightedIndex && (
-                      <Badge colorScheme="orange" ml="auto">Press Enter</Badge>
-                    )}
-                  </HStack>
-                </ListItem>
-              ))}
+              {filteredIngredients.map((ingredient, index) => {
+                // Check directly if this ingredient is already selected
+                const isSelected = selectedIngredients.some(
+                  selected => selected.toLowerCase() === ingredient.toLowerCase()
+                );
+                
+                return (
+                  <ListItem 
+                    key={ingredient}
+                    px={4}
+                    py={2}
+                    cursor="pointer"
+                    bg={index === highlightedIndex ? "orange.50" : "transparent"}
+                    _hover={{ bg: "orange.50" }}
+                    onClick={() => {
+                      handleIngredientClick(ingredient)
+                      setSearchTerm('')
+                      setShowSuggestions(false)
+                    }}
+                  >
+                    <HStack>
+                      <Text>{ingredient}</Text>
+                      {index === highlightedIndex && (
+                        <Badge 
+                          colorScheme={isSelected ? "red" : "orange"} 
+                          ml="auto"
+                        >
+                          {isSelected ? "DELETE" : "Press Enter"}
+                        </Badge>
+                      )}
+                    </HStack>
+                  </ListItem>
+                );
+              })}
             </List>
           </Box>
         )}
@@ -686,14 +852,15 @@ const RecipeFinder = () => {
                   )
                 ) : (
                   <Box maxH="300px" overflowY="auto">
-                    <Accordion allowMultiple defaultIndex={[]} allowToggle>
+                    <Accordion allowMultiple defaultIndex={[]} allowToggle className="custom-accordion">
                       {ingredientCategories.map((category, index) => (
-                        <AccordionItem key={index} border="none">
+                        <AccordionItem key={index} border="none" className="custom-accordion-item">
                           <AccordionButton 
                             _hover={{ bg: 'orange.50' }}
                             _expanded={{ bg: 'orange.50', color: 'orange.500', fontWeight: 'semibold' }}
                             borderRadius="md"
                             p={3}
+                            className="custom-accordion-button"
                           >
                             <HStack flex="1" spacing={3} align="center">
                               <Text fontSize="md" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" maxW="220px">
@@ -705,7 +872,7 @@ const RecipeFinder = () => {
                             </HStack>
                             <AccordionIcon />
                           </AccordionButton>
-                          <AccordionPanel pb={4}>
+                          <AccordionPanel pb={4} className="custom-accordion-panel">
                             <Wrap>
                               {category.ingredients.map((ingredient) => (
                                 <WrapItem key={ingredient}>
@@ -811,193 +978,7 @@ const RecipeFinder = () => {
               )}
             </HStack>
 
-            {isLoading && displayedRecipes.length === 0 ? (
-              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 4, md: 4 }}>
-                {[1, 2, 3].map((n) => (
-                  <Box key={n} borderWidth="1px" borderRadius="xl" overflow="hidden">
-                    <Skeleton height="200px" />
-                    <Box p={4}>
-                      <Skeleton height="20px" mb={2} />
-                      <Skeleton height="30px" width="100px" />
-                    </Box>
-                  </Box>
-                ))}
-              </SimpleGrid>
-            ) : displayedRecipes.length > 0 ? (
-              <>
-                <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 4, md: 4 }}>
-                  {displayedRecipes.map((recipe) => {
-                    const matchInfo = getIngredientMatchInfo(recipe);
-                    return (
-                      <Box
-                        key={recipe.id}
-                        borderWidth="1px"
-                        borderRadius="xl"
-                        overflow="hidden"
-                        w="100%"
-                        pr="0"
-                        bg="white"
-                        _hover={{ 
-                          transform: 'translateY(-4px)',
-                          boxShadow: 'lg',
-                          transition: 'all 0.2s ease-in-out'
-                        }}
-                        cursor="pointer"
-                        onClick={() => handleRecipeClick(recipe)}
-                      >
-                        <Box position="relative">
-                          <Image 
-                            src={recipe.image} 
-                            alt={recipe.name} 
-                            height="200px" 
-                            width="100%"
-                            objectFit="cover" 
-                          />
-                          <Box
-                            position="absolute"
-                            top={0}
-                            left={0}
-                            right={0}
-                            bottom={0}
-                            bgGradient="linear(to-t, blackAlpha.600, transparent)"
-                          />
-                          <HStack 
-                            position="absolute" 
-                            bottom={3} 
-                            left={3} 
-                            spacing={2}
-                          >
-                            {recipe.difficulty && (
-                              <Tag size="md" colorScheme={getDifficultyColor(recipe.difficulty)} variant="solid">
-                                {recipe.difficulty}
-                              </Tag>
-                            )}
-                            <Tag size="md" colorScheme="whiteAlpha" variant="solid">
-                              {recipe.cookTime}
-                            </Tag>
-                          </HStack>
-                        </Box>
-                        <Box p={4}>
-                          <Heading size="md" mb={2}>{recipe.name}</Heading>
-                          <HStack spacing={3} color="gray.600" fontSize="sm">
-                            <Text>{recipe.ingredients.length} ingredients</Text>
-                            <Text>•</Text>
-                            <Text>Serves {recipe.servings}</Text>
-                            {recipe.category && (
-                              <>
-                                <Text>•</Text>
-                                <Text>{recipe.category}</Text>
-                              </>
-                            )}
-                          </HStack>
-                          
-                          {/* Ingredient Match Information */}
-                          {selectedIngredients.length > 0 && (
-                            <Box mt={3} pt={3} borderTopWidth="1px" borderColor="gray.100">
-                              <Flex justify="space-between" align="center" mb={2}>
-                                <Text fontSize="sm" fontWeight="medium">
-                                  Your Ingredients: {matchInfo.matchedCount}/{matchInfo.totalSelected}
-                                </Text>
-                                <Badge 
-                                  colorScheme={matchInfo.matchPercentage > 70 ? "green" : matchInfo.matchPercentage > 40 ? "yellow" : "red"}
-                                  fontSize="xs"
-                                >
-                                  {matchInfo.matchPercentage}% match
-                                </Badge>
-                              </Flex>
-                              <Progress 
-                                value={matchInfo.matchPercentage} 
-                                size="sm" 
-                                colorScheme={matchInfo.matchPercentage > 70 ? "green" : matchInfo.matchPercentage > 40 ? "yellow" : "red"}
-                                mb={2}
-                              />
-                              
-                              {matchInfo.missingIngredients.length > 0 && (
-                                <Box mt={2}>
-                                  <Text fontSize="xs" color="gray.500" mb={1}>
-                                    You'll also need:
-                                  </Text>
-                                  <Wrap spacing={1}>
-                                    {matchInfo.missingIngredients.map((ingredient, index) => (
-                                      <WrapItem key={index}>
-                                        <Tag 
-                                          size="xs" 
-                                          colorScheme="gray" 
-                                          variant="outline"
-                                          borderRadius="md"
-                                          px={1}
-                                          py={0.5}
-                                          fontSize="10px"
-                                          whiteSpace="nowrap"
-                                          maxW="100px"
-                                          overflow="hidden"
-                                          textOverflow="ellipsis"
-                                        >
-                                          {ingredient.split(' ').slice(-2).join(' ')}
-                                        </Tag>
-                                      </WrapItem>
-                                    ))}
-                                    {matchInfo.hasMoreMissing && (
-                                      <WrapItem>
-                                        <Tag 
-                                          size="xs" 
-                                          colorScheme="gray" 
-                                          variant="outline"
-                                          borderRadius="md"
-                                          px={1}
-                                          py={0.5}
-                                          fontSize="10px"
-                                        >
-                                          +{recipe.ingredients.length - matchInfo.matchedCount - matchInfo.missingIngredients.length} more
-                                        </Tag>
-                                      </WrapItem>
-                                    )}
-                                  </Wrap>
-                                </Box>
-                              )}
-                            </Box>
-                          )}
-                        </Box>
-                      </Box>
-                    );
-                  })}
-                </SimpleGrid>
-                
-                {/* Load More Button */}
-                {hasMore && (
-                  <Flex justify="center" mt={8}>
-                    <Button
-                      colorScheme="orange"
-                      size="lg"
-                      onClick={handleLoadMore}
-                      isLoading={isLoading}
-                      loadingText="Loading more recipes..."
-                      leftIcon={<AddIcon />}
-                    >
-                      See More Recipes
-                    </Button>
-                  </Flex>
-                )}
-              </>
-            ) : (
-              <Box 
-                textAlign="center" 
-                py={10}
-                px={6}
-                borderRadius="xl"
-                borderWidth="1px"
-                borderStyle="dashed"
-                borderColor="orange.200"
-                bg="orange.50"
-              >
-                <Text fontSize="xl" fontWeight="medium" mb={2}>No recipes found</Text>
-                <Text color="gray.600">
-                  {selectedIngredients.length === 0 
-                    ? "Select some ingredients to see matching recipes"
-                    : "Try selecting different ingredients or adjusting the filters"}
-                </Text>
-              </Box>
-            )}
+            {RecipeList}
           </Box>
         </Box>
       </Grid>

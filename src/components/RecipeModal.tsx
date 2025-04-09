@@ -15,9 +15,11 @@ import {
   Image,
   Grid,
   Divider,
+  Skeleton,
 } from '@chakra-ui/react'
 import { Recipe } from '../types'
 import { ClockIcon, UsersIcon } from './Icons'
+import { useState } from 'react'
 
 interface RecipeModalProps {
   recipe: Recipe | null
@@ -26,24 +28,33 @@ interface RecipeModalProps {
 }
 
 const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
+  const [imageLoaded, setImageLoaded] = useState(false)
+  
   if (!recipe) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+    <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent maxW="800px" maxH="90vh" overflowY="auto">
         <ModalHeader>{recipe.name}</ModalHeader>
         <ModalCloseButton />
         <ModalBody pb={6}>
           <Grid templateColumns={{ base: '1fr', md: '200px 1fr' }} gap={4}>
-            <Image
-              src={recipe.image}
-              alt={recipe.name}
-              borderRadius="md"
-              objectFit="cover"
-              height="200px"
-              width="100%"
-            />
+            <Box position="relative" height="200px" width="100%">
+              {!imageLoaded && (
+                <Skeleton height="200px" width="100%" borderRadius="md" />
+              )}
+              <Image
+                src={recipe.image}
+                alt={recipe.name}
+                borderRadius="md"
+                objectFit="cover"
+                height="200px"
+                width="100%"
+                onLoad={() => setImageLoaded(true)}
+                style={{ display: imageLoaded ? 'block' : 'none' }}
+              />
+            </Box>
             <Box>
               <HStack spacing={4} mb={4}>
                 <HStack>
