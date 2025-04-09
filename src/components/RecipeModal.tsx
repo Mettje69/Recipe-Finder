@@ -16,10 +16,11 @@ import {
   Grid,
   Divider,
   Skeleton,
+  useDisclosure,
 } from '@chakra-ui/react'
 import { Recipe } from '../types'
 import { ClockIcon, UsersIcon } from './Icons'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface RecipeModalProps {
   recipe: Recipe | null
@@ -29,18 +30,51 @@ interface RecipeModalProps {
 
 const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
   const [imageLoaded, setImageLoaded] = useState(false)
+  const [contentReady, setContentReady] = useState(false)
+  
+  // Reset states when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      // Set content ready after a short delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setContentReady(true)
+      }, 50)
+      return () => clearTimeout(timer)
+    } else {
+      setContentReady(false)
+      setImageLoaded(false)
+    }
+  }, [isOpen])
   
   if (!recipe) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      size="xl" 
+      isCentered
+      motionPreset="slideInBottom"
+    >
       <ModalOverlay />
-      <ModalContent maxW="800px" maxH="90vh" overflowY="auto">
+      <ModalContent 
+        maxW="800px" 
+        maxH="90vh" 
+        overflowY="auto"
+        w="100%"
+        transition="all 0.2s ease-in-out"
+      >
         <ModalHeader>{recipe.name}</ModalHeader>
         <ModalCloseButton />
         <ModalBody pb={6}>
           <Grid templateColumns={{ base: '1fr', md: '200px 1fr' }} gap={4}>
-            <Box position="relative" height="200px" width="100%">
+            <Box 
+              position="relative" 
+              height="200px" 
+              width="100%"
+              overflow="hidden"
+              borderRadius="md"
+            >
               {!imageLoaded && (
                 <Skeleton height="200px" width="100%" borderRadius="md" />
               )}
@@ -52,7 +86,11 @@ const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
                 height="200px"
                 width="100%"
                 onLoad={() => setImageLoaded(true)}
-                style={{ display: imageLoaded ? 'block' : 'none' }}
+                style={{ 
+                  display: imageLoaded ? 'block' : 'none',
+                  opacity: imageLoaded ? 1 : 0,
+                  transition: 'opacity 0.3s ease-in-out'
+                }}
               />
             </Box>
             <Box>

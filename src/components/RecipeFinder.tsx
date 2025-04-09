@@ -422,7 +422,18 @@ const RecipeFinder = () => {
     selectedIngredients: string[], 
     onRecipeClick: (recipe: Recipe) => void 
   }) => {
+    // Pre-calculate match info outside of render
     const matchInfo = useMemo(() => {
+      if (selectedIngredients.length === 0) {
+        return {
+          matchedCount: 0,
+          totalSelected: 0,
+          missingIngredients: [],
+          hasMoreMissing: false,
+          matchPercentage: 0
+        };
+      }
+
       try {
         const matchedIngredients = selectedIngredients.filter(selectedIngredient => 
           recipe.ingredients.some(recipeIngredient => 
@@ -436,9 +447,7 @@ const RecipeFinder = () => {
           )
         );
         
-        const matchPercentage = selectedIngredients.length > 0 
-          ? Math.round((matchedIngredients.length / selectedIngredients.length) * 100) 
-          : 0;
+        const matchPercentage = Math.round((matchedIngredients.length / selectedIngredients.length) * 100);
         
         return {
           matchedCount: matchedIngredients.length,
@@ -459,6 +468,11 @@ const RecipeFinder = () => {
       }
     }, [recipe.ingredients, selectedIngredients]);
 
+    // Memoize the click handler to prevent unnecessary re-renders
+    const handleClick = useCallback(() => {
+      onRecipeClick(recipe);
+    }, [onRecipeClick, recipe]);
+
     return (
       <Box
         borderWidth="1px"
@@ -474,7 +488,7 @@ const RecipeFinder = () => {
           }
         }}
         cursor="pointer"
-        onClick={() => onRecipeClick(recipe)}
+        onClick={handleClick}
       >
         <Box position="relative">
           <Image 
@@ -592,6 +606,13 @@ const RecipeFinder = () => {
         </Box>
       </Box>
     );
+  }, (prevProps, nextProps) => {
+    // Custom comparison function to prevent unnecessary re-renders
+    return (
+      prevProps.recipe.id === nextProps.recipe.id &&
+      prevProps.selectedIngredients.length === nextProps.selectedIngredients.length &&
+      prevProps.selectedIngredients.every((ing, i) => ing === nextProps.selectedIngredients[i])
+    );
   });
 
   // Memoize the recipe list rendering
@@ -640,7 +661,6 @@ const RecipeFinder = () => {
           {displayedRecipes.map((recipe) => (
             <Box 
               key={recipe.id}
-              transition="opacity 0.3s ease-in-out"
             >
               <RecipeCard 
                 recipe={recipe}
@@ -667,7 +687,7 @@ const RecipeFinder = () => {
         )}
       </>
     );
-  }, [displayedRecipes, selectedIngredients, isLoading, hasMore]);
+  }, [displayedRecipes, selectedIngredients, isLoading, hasMore, handleRecipeClick]);
 
   return (
     <VStack 
