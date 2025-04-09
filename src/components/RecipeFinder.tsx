@@ -281,10 +281,12 @@ const RecipeFinder = () => {
     }
   }
 
+  // Create a simple, direct function to handle recipe clicks
   const handleRecipeClick = (recipe: Recipe) => {
-    setSelectedRecipe(recipe)
-    onOpen()
-  }
+    console.log('Opening recipe:', recipe.name);
+    setSelectedRecipe(recipe);
+    onOpen();
+  };
 
   // Debounced search term update
   const handleSearchTermChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -412,8 +414,8 @@ const RecipeFinder = () => {
     return sortRecipes(recipes, sortBy);
   }, [recipes, selectedIngredients, sortBy]);
 
-  // Add a memoized RecipeCard component
-  const RecipeCard = React.memo(({ 
+  // Create a simple RecipeCard component without any complex logic
+  const RecipeCard = ({ 
     recipe, 
     selectedIngredients, 
     onRecipeClick 
@@ -468,11 +470,6 @@ const RecipeFinder = () => {
       }
     }, [recipe.ingredients, selectedIngredients]);
 
-    // Memoize the click handler to prevent unnecessary re-renders
-    const handleClick = useCallback(() => {
-      onRecipeClick(recipe);
-    }, [onRecipeClick, recipe]);
-
     return (
       <Box
         borderWidth="1px"
@@ -482,13 +479,13 @@ const RecipeFinder = () => {
         pr="0"
         bg="white"
         boxShadow="sm"
+        cursor="pointer"
+        onClick={() => onRecipeClick(recipe)}
         sx={{
           '&:hover': {
             boxShadow: "lg"
           }
         }}
-        cursor="pointer"
-        onClick={handleClick}
       >
         <Box position="relative">
           <Image 
@@ -497,7 +494,6 @@ const RecipeFinder = () => {
             height="200px" 
             width="100%"
             objectFit="cover"
-            loading="lazy"
           />
           <Box
             position="absolute"
@@ -606,14 +602,7 @@ const RecipeFinder = () => {
         </Box>
       </Box>
     );
-  }, (prevProps, nextProps) => {
-    // Custom comparison function to prevent unnecessary re-renders
-    return (
-      prevProps.recipe.id === nextProps.recipe.id &&
-      prevProps.selectedIngredients.length === nextProps.selectedIngredients.length &&
-      prevProps.selectedIngredients.every((ing, i) => ing === nextProps.selectedIngredients[i])
-    );
-  });
+  };
 
   // Memoize the recipe list rendering
   const RecipeList = useMemo(() => {

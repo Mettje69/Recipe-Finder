@@ -14,9 +14,13 @@ import {
   Box,
   Image,
   Grid,
+  GridItem,
   Divider,
-  Skeleton,
-  useDisclosure,
+  Tag,
+  List,
+  Progress,
+  useColorModeValue,
+  Skeleton
 } from '@chakra-ui/react'
 import { Recipe } from '../types'
 import { ClockIcon, UsersIcon } from './Icons'
@@ -28,114 +32,9 @@ interface RecipeModalProps {
   onClose: () => void
 }
 
-const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
-  const [imageLoaded, setImageLoaded] = useState(false)
-  const [contentReady, setContentReady] = useState(false)
+const getDifficultyColor = (difficulty: string | undefined) => {
+  if (!difficulty) return 'gray'
   
-  // Reset states when modal opens/closes
-  useEffect(() => {
-    if (isOpen) {
-      // Set content ready after a short delay to ensure smooth transition
-      const timer = setTimeout(() => {
-        setContentReady(true)
-      }, 50)
-      return () => clearTimeout(timer)
-    } else {
-      setContentReady(false)
-      setImageLoaded(false)
-    }
-  }, [isOpen])
-  
-  if (!recipe) return null
-
-  return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      size="xl" 
-      isCentered
-      motionPreset="slideInBottom"
-    >
-      <ModalOverlay />
-      <ModalContent 
-        maxW="800px" 
-        maxH="90vh" 
-        overflowY="auto"
-        w="100%"
-        transition="all 0.2s ease-in-out"
-      >
-        <ModalHeader>{recipe.name}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody pb={6}>
-          <Grid templateColumns={{ base: '1fr', md: '200px 1fr' }} gap={4}>
-            <Box 
-              position="relative" 
-              height="200px" 
-              width="100%"
-              overflow="hidden"
-              borderRadius="md"
-            >
-              {!imageLoaded && (
-                <Skeleton height="200px" width="100%" borderRadius="md" />
-              )}
-              <Image
-                src={recipe.image}
-                alt={recipe.name}
-                borderRadius="md"
-                objectFit="cover"
-                height="200px"
-                width="100%"
-                onLoad={() => setImageLoaded(true)}
-                style={{ 
-                  display: imageLoaded ? 'block' : 'none',
-                  opacity: imageLoaded ? 1 : 0,
-                  transition: 'opacity 0.3s ease-in-out'
-                }}
-              />
-            </Box>
-            <Box>
-              <HStack spacing={4} mb={4}>
-                <HStack>
-                  <ClockIcon />
-                  <Text>Cook: {recipe.cookTime}</Text>
-                </HStack>
-                <HStack>
-                  <UsersIcon />
-                  <Text>Serves: {recipe.servings}</Text>
-                </HStack>
-              </HStack>
-              {recipe.difficulty && (
-                <Badge colorScheme={getDifficultyColor(recipe.difficulty)} mb={4}>
-                  {recipe.difficulty}
-                </Badge>
-              )}
-            </Box>
-          </Grid>
-
-          <Divider my={4} />
-
-          <VStack align="stretch" spacing={4}>
-            <Box>
-              <Text fontWeight="bold" mb={2}>Ingredients:</Text>
-              <UnorderedList spacing={1}>
-                {recipe.ingredients.map((ingredient, index) => (
-                  <ListItem key={index}>{ingredient}</ListItem>
-                ))}
-              </UnorderedList>
-            </Box>
-
-            <Box>
-              <Text fontWeight="bold" mb={2}>Instructions:</Text>
-              <Text>{recipe.instructions}</Text>
-            </Box>
-          </VStack>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
-  )
-}
-
-const getDifficultyColor = (difficulty: string) => {
   switch (difficulty.toLowerCase()) {
     case 'easy':
       return 'green'
@@ -146,6 +45,118 @@ const getDifficultyColor = (difficulty: string) => {
     default:
       return 'gray'
   }
+}
+
+export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const bgColor = useColorModeValue('white', 'gray.800')
+
+  // Reset image loaded state when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setImageLoaded(false)
+    }
+  }, [isOpen])
+
+  if (!recipe) return null
+
+  return (
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      size="xl"
+      motionPreset="slideInBottom"
+    >
+      <ModalOverlay backdropFilter="blur(4px)" />
+      <ModalContent 
+        maxW="900px" 
+        w="100%" 
+        mx={4}
+        bg={bgColor}
+        borderRadius="xl"
+        overflow="hidden"
+      >
+        <ModalHeader p={6} borderBottomWidth="1px">
+          <Text fontSize="2xl" fontWeight="bold">{recipe.name}</Text>
+        </ModalHeader>
+        <ModalCloseButton />
+        <ModalBody p={6}>
+          <Grid
+            templateColumns={{ base: '1fr', md: '1fr 1fr' }}
+            gap={6}
+            w="100%"
+          >
+            <GridItem>
+              <Box 
+                position="relative" 
+                borderRadius="lg" 
+                overflow="hidden"
+                bg="gray.100"
+                height="300px"
+              >
+                {!imageLoaded && (
+                  <Skeleton 
+                    height="100%" 
+                    width="100%" 
+                    position="absolute" 
+                    top={0} 
+                    left={0} 
+                  />
+                )}
+                <Image
+                  src={recipe.image}
+                  alt={recipe.name}
+                  objectFit="cover"
+                  w="100%"
+                  h="100%"
+                  onLoad={() => setImageLoaded(true)}
+                  transition="opacity 0.3s ease-in-out"
+                  opacity={imageLoaded ? 1 : 0}
+                />
+              </Box>
+            </GridItem>
+            <GridItem>
+              <VStack align="stretch" spacing={4}>
+                <HStack spacing={4}>
+                  <Tag size="lg" colorScheme={getDifficultyColor(recipe.difficulty)}>
+                    {recipe.difficulty}
+                  </Tag>
+                  <Tag size="lg" colorScheme="blue">
+                    {recipe.cookTime}
+                  </Tag>
+                  <Tag size="lg" colorScheme="green">
+                    Serves {recipe.servings}
+                  </Tag>
+                </HStack>
+                <Box>
+                  <Text fontWeight="bold" mb={2}>Ingredients:</Text>
+                  <List spacing={2}>
+                    {recipe.ingredients.map((ingredient, index) => (
+                      <ListItem key={index}>
+                        <Text>{ingredient}</Text>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              </VStack>
+            </GridItem>
+            <GridItem gridColumn={{ base: '1', md: '1 / -1' }}>
+              <Box>
+                <Text fontWeight="bold" mb={2}>Instructions:</Text>
+                <List spacing={3}>
+                  {recipe.instructions.map((instruction, index) => (
+                    <ListItem key={index}>
+                      <Text>{instruction}</Text>
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            </GridItem>
+          </Grid>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  )
 }
 
 export default RecipeModal 
