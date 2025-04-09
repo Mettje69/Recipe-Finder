@@ -344,11 +344,11 @@ const RecipeFinder = () => {
   }
 
   // Create a simple, direct function to handle recipe clicks
-  const handleRecipeClick = (recipe: Recipe) => {
+  const handleRecipeClick = useCallback((recipe: Recipe) => {
     console.log('Opening recipe:', recipe.name);
     setSelectedRecipe(recipe);
     onOpen();
-  };
+  }, [onOpen]);
 
   // Debounced search term update
   const handleSearchTermChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -710,15 +710,12 @@ const RecipeFinder = () => {
       <>
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 4, md: 4 }}>
           {displayedRecipes.map((recipe) => (
-            <Box 
+            <RecipeCard 
               key={recipe.id}
-            >
-              <RecipeCard 
-                recipe={recipe}
-                selectedIngredients={selectedIngredients}
-                onRecipeClick={handleRecipeClick}
-              />
-            </Box>
+              recipe={recipe}
+              selectedIngredients={selectedIngredients}
+              onRecipeClick={handleRecipeClick}
+            />
           ))}
         </SimpleGrid>
         
