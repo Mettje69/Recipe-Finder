@@ -1,20 +1,51 @@
-import { Box, Heading, Text, HStack, Icon, Container, Button, Flex } from '@chakra-ui/react'
+import { Box, Heading, Text, HStack, Icon, Container, Button, Flex, useColorModeValue } from '@chakra-ui/react'
 import { SearchIcon, AddIcon, StarIcon } from '@chakra-ui/icons'
 import { Link as RouterLink } from 'react-router-dom'
 
 const Header = () => {
+  const headerBg = useColorModeValue('white', 'gray.800')
+  const borderColor = useColorModeValue('orange.100', 'gray.700')
+  const titleColor = useColorModeValue('orange.500', 'orange.300')
+
   return (
-    <Box bg="white" borderBottom="1px" borderColor="gray.200" py={6} w="100%" overflowX="hidden" maxW="100%" pr="0">
-      <Container maxW="1280px" px={{ base: 4, md: 6 }}>
+    <Box 
+      bg={headerBg}
+      borderBottom="1px"
+      borderColor={borderColor}
+      py={4}
+      w="100%"
+      overflowX="hidden"
+      maxW="100%"
+      pr="0"
+      position="relative"
+      _before={{
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '100%',
+        background: 'linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)',
+        zIndex: 0
+      }}
+      boxShadow="sm"
+    >
+      <Container maxW="1280px" px={{ base: 3, md: 4 }} position="relative" zIndex={1}>
         <Flex justify="space-between" align="center">
           <Button
             as={RouterLink}
             to="/"
             leftIcon={<StarIcon />}
             colorScheme="orange"
-            size="lg"
+            size="md"
             borderRadius="full"
             variant="outline"
+            _hover={{
+              transform: 'translateY(-2px)',
+              boxShadow: 'md',
+              borderColor: 'orange.400'
+            }}
+            transition="all 0.2s ease-in-out"
           >
             Home
           </Button>
@@ -22,19 +53,29 @@ const Header = () => {
           <HStack spacing={4} align="center">
             <Box
               bg="orange.500"
-              p={3}
-              borderRadius="xl"
+              p={2}
+              borderRadius="lg"
               display="flex"
               alignItems="center"
               justifyContent="center"
+              boxShadow="md"
+              _hover={{
+                transform: 'scale(1.05)',
+                boxShadow: 'lg'
+              }}
+              transition="all 0.2s ease-in-out"
             >
-              <Icon as={SearchIcon} w={8} h={8} color="white" />
+              <Icon as={SearchIcon} w={5} h={5} color="white" />
             </Box>
             <Box>
-              <Heading size="lg" color="gray.800">Recipe Finder</Heading>
-              <Text color="gray.600" fontSize="sm">
-                Find delicious recipes based on the ingredients you have
-              </Text>
+              <Heading 
+                size="lg" 
+                color={titleColor}
+                fontWeight="bold"
+                letterSpacing="tight"
+              >
+                Recipe Finder
+              </Heading>
             </Box>
           </HStack>
           
@@ -43,8 +84,13 @@ const Header = () => {
             to="/add"
             leftIcon={<AddIcon />}
             colorScheme="orange"
-            size="lg"
+            size="md"
             borderRadius="full"
+            _hover={{
+              transform: 'translateY(-2px)',
+              boxShadow: 'md'
+            }}
+            transition="all 0.2s ease-in-out"
           >
             Add Recipe
           </Button>

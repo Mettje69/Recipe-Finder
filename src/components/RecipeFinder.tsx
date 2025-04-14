@@ -239,25 +239,25 @@ const RecipeFinder = () => {
         }
 
         // Apply additional filters
-        if (filters.difficulty) {
+          if (filters.difficulty) {
           filteredRecipes = filteredRecipes.filter(recipe => 
             recipe.difficulty === filters.difficulty
           );
-        }
-
-        if (filters.category) {
+          }
+          
+          if (filters.category) {
           filteredRecipes = filteredRecipes.filter(recipe => 
             recipe.category === filters.category
           );
-        }
-
-        if (filters.maxCookTime) {
-          filteredRecipes = filteredRecipes.filter(recipe => {
+          }
+          
+          if (filters.maxCookTime) {
+            filteredRecipes = filteredRecipes.filter(recipe => {
             const cookTime = parseInt(recipe.cookTime.split(' ')[0]);
             return !isNaN(cookTime) && cookTime <= filters.maxCookTime!;
           });
         }
-
+        
         // Sort recipes
         const sortedRecipes = sortRecipes(filteredRecipes, sortBy);
         
@@ -473,201 +473,51 @@ const RecipeFinder = () => {
 
   // Create a memoized sorted recipes array
   const sortedRecipes = useMemo(() => {
-    return sortRecipes(recipes, sortBy);
-  }, [recipes, selectedIngredients, sortBy]);
-
-  // Create a simple RecipeCard component without any complex logic
-  const RecipeCard = ({ 
-    recipe, 
-    selectedIngredients, 
-    onRecipeClick 
-  }: { 
-    recipe: Recipe, 
-    selectedIngredients: string[], 
-    onRecipeClick: (recipe: Recipe) => void 
-  }) => {
-    // Pre-calculate match info outside of render
-    const matchInfo = useMemo(() => {
-      if (selectedIngredients.length === 0) {
-        return {
-          matchedCount: 0,
-          totalSelected: 0,
-          missingIngredients: [],
-          hasMoreMissing: false,
-          matchPercentage: 0
+    return [...recipes].sort((a, b) => {
+      if (sortBy === 'name') {
+        return a.name.localeCompare(b.name);
+      } else if (sortBy === 'difficulty') {
+        type DifficultyLevel = 'Easy' | 'Medium' | 'Hard';
+        const difficultyOrder: Record<DifficultyLevel, number> = {
+          'Easy': 0,
+          'Medium': 1,
+          'Hard': 2
         };
+        const aDifficulty = (a.difficulty || 'Easy') as DifficultyLevel;
+        const bDifficulty = (b.difficulty || 'Easy') as DifficultyLevel;
+        const aValue: number = difficultyOrder[aDifficulty];
+        const bValue: number = difficultyOrder[bDifficulty];
+        return aValue - bValue;
+      } else if (sortBy === 'cookTime') {
+        return (a.cookTime || 0) - (b.cookTime || 0);
       }
-
-      try {
-        const matchedIngredients = selectedIngredients.filter(selectedIngredient => 
-          recipe.ingredients.some(recipeIngredient => 
-            recipeIngredient.toLowerCase().includes(selectedIngredient.toLowerCase())
-          )
-        );
-        
-        const missingIngredients = recipe.ingredients.filter(recipeIngredient => 
-          !selectedIngredients.some(selectedIngredient => 
-            recipeIngredient.toLowerCase().includes(selectedIngredient.toLowerCase())
-          )
-        );
-        
-        const matchPercentage = Math.round((matchedIngredients.length / selectedIngredients.length) * 100);
-        
-        return {
-          matchedCount: matchedIngredients.length,
-          totalSelected: selectedIngredients.length,
-          missingIngredients: missingIngredients.slice(0, 3),
-          hasMoreMissing: missingIngredients.length > 3,
-          matchPercentage
-        };
-      } catch (error) {
-        console.error('Error calculating match info:', error);
-        return {
-          matchedCount: 0,
-          totalSelected: selectedIngredients.length,
-          missingIngredients: [],
-          hasMoreMissing: false,
-          matchPercentage: 0
-        };
-      }
-    }, [recipe.ingredients, selectedIngredients]);
-
-    return (
-      <Box
-        borderWidth="1px"
-        borderRadius="xl"
-        overflow="hidden"
-        w="100%"
-        pr="0"
-        bg="white"
-        boxShadow="sm"
-        cursor="pointer"
-        onClick={() => onRecipeClick(recipe)}
-        sx={{
-          '&:hover': {
-            boxShadow: "lg"
-          }
-        }}
-      >
-        <Box position="relative">
-          <Image 
-            src={recipe.image} 
-            alt={recipe.name} 
-            height="200px" 
-            width="100%"
-            objectFit="cover"
-          />
-          <Box
-            position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            bgGradient="linear(to-t, blackAlpha.600, transparent)"
-          />
-          <HStack 
-            position="absolute" 
-            bottom={3} 
-            left={3} 
-            spacing={2}
-          >
-            {recipe.difficulty && (
-              <Tag size="md" colorScheme={getDifficultyColor(recipe.difficulty)} variant="solid">
-                {recipe.difficulty}
-              </Tag>
-            )}
-            <Tag size="md" colorScheme="whiteAlpha" variant="solid">
-              {recipe.cookTime}
-            </Tag>
-          </HStack>
-        </Box>
-        <Box p={4}>
-          <Heading size="md" mb={2}>{recipe.name}</Heading>
-          <HStack spacing={3} color="gray.600" fontSize="sm">
-            <Text>{recipe.ingredients.length} ingredients</Text>
-            <Text>•</Text>
-            <Text>Serves {recipe.servings}</Text>
-            {recipe.category && (
-              <>
-                <Text>•</Text>
-                <Text>{recipe.category}</Text>
-              </>
-            )}
-          </HStack>
-          
-          {/* Ingredient Match Information */}
-          {selectedIngredients.length > 0 && (
-            <Box mt={3} pt={3} borderTopWidth="1px" borderColor="gray.100">
-              <Flex justify="space-between" align="center" mb={2}>
-                <Text fontSize="sm" fontWeight="medium">
-                  Your Ingredients: {matchInfo.matchedCount}/{matchInfo.totalSelected}
-                </Text>
-                <Badge 
-                  colorScheme={matchInfo.matchPercentage > 70 ? "green" : matchInfo.matchPercentage > 40 ? "yellow" : "red"}
-                  fontSize="xs"
-                >
-                  {matchInfo.matchPercentage}% match
-                </Badge>
-              </Flex>
-              <Progress 
-                value={matchInfo.matchPercentage} 
-                size="sm" 
-                colorScheme={matchInfo.matchPercentage > 70 ? "green" : matchInfo.matchPercentage > 40 ? "yellow" : "red"}
-                mb={2}
-              />
-              
-              {matchInfo.missingIngredients.length > 0 && (
-                <Box mt={2}>
-                  <Text fontSize="xs" color="gray.500" mb={1}>
-                    You'll also need:
-                  </Text>
-                  <Wrap spacing={1}>
-                    {matchInfo.missingIngredients.map((ingredient, index) => (
-                      <WrapItem key={index}>
-                        <Tag 
-                          size="xs" 
-                          colorScheme="gray" 
-                          variant="outline"
-                          borderRadius="md"
-                          px={1}
-                          py={0.5}
-                          fontSize="10px"
-                          whiteSpace="nowrap"
-                          maxW="100px"
-                          overflow="hidden"
-                          textOverflow="ellipsis"
-                        >
-                          {ingredient.split(' ').slice(-2).join(' ')}
-                        </Tag>
-                      </WrapItem>
-                    ))}
-                    {matchInfo.hasMoreMissing && (
-                      <WrapItem>
-                        <Tag 
-                          size="xs" 
-                          colorScheme="gray" 
-                          variant="outline"
-                          borderRadius="md"
-                          px={1}
-                          py={0.5}
-                          fontSize="10px"
-                        >
-                          +{recipe.ingredients.length - matchInfo.matchedCount - matchInfo.missingIngredients.length} more
-                        </Tag>
-                      </WrapItem>
-                    )}
-                  </Wrap>
-                </Box>
-              )}
-            </Box>
-          )}
-        </Box>
-      </Box>
-    );
-  };
+      return 0;
+    });
+  }, [recipes, sortBy]);
 
   // Memoize the recipe list rendering
   const RecipeList = useMemo(() => {
+    // Don't show any recipes until ingredients are selected
+    if (selectedIngredients.length === 0) {
+      return (
+        <Box 
+          textAlign="center" 
+          py={10}
+          px={6}
+          borderRadius="xl"
+          borderWidth="1px"
+          borderStyle="dashed"
+          borderColor="orange.200"
+          bg="orange.50"
+        >
+          <Text fontSize="xl" fontWeight="medium" mb={2}>Select Ingredients to Find Recipes</Text>
+          <Text color="gray.600">
+            Choose ingredients from the list to see matching recipes
+          </Text>
+        </Box>
+      );
+    }
+
     if (isLoading && displayedRecipes.length === 0) {
       return (
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 4, md: 4 }}>
@@ -698,9 +548,7 @@ const RecipeFinder = () => {
         >
           <Text fontSize="xl" fontWeight="medium" mb={2}>No recipes found</Text>
           <Text color="gray.600">
-            {selectedIngredients.length === 0 
-              ? "Select some ingredients to see matching recipes"
-              : "Try selecting different ingredients or adjusting the filters"}
+            Try selecting different ingredients or adjusting the filters
           </Text>
         </Box>
       );
@@ -710,12 +558,136 @@ const RecipeFinder = () => {
       <>
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 4, md: 4 }}>
           {displayedRecipes.map((recipe) => (
-            <RecipeCard 
+            <Box 
               key={recipe.id}
-              recipe={recipe}
-              selectedIngredients={selectedIngredients}
-              onRecipeClick={handleRecipeClick}
-            />
+              onClick={() => handleRecipeClick(recipe)}
+              borderWidth="1px"
+              borderRadius="xl"
+              overflow="hidden"
+              w="100%"
+              pr="0"
+              bg="white"
+              boxShadow="sm"
+              position="relative"
+              willChange="transform"
+              transform="translateZ(0)"
+              cursor="pointer"
+            >
+              <Box position="relative">
+                <Image 
+                  src={recipe.image} 
+                  alt={recipe.name} 
+                  height="200px" 
+                  width="100%"
+                  objectFit="cover"
+                  loading="lazy"
+                />
+                <Box
+                  position="absolute"
+                  top={0}
+                  left={0}
+                  right={0}
+                  bottom={0}
+                  bgGradient="linear(to-t, blackAlpha.600, transparent)"
+                />
+                <HStack 
+                  position="absolute" 
+                  bottom={3} 
+                  left={3} 
+                  spacing={2}
+                >
+                  {recipe.difficulty && (
+                    <Tag size="md" colorScheme={getDifficultyColor(recipe.difficulty)} variant="solid">
+                      {recipe.difficulty}
+                    </Tag>
+                  )}
+                  <Tag size="md" colorScheme="whiteAlpha" variant="solid">
+                    {recipe.cookTime}
+                  </Tag>
+                </HStack>
+              </Box>
+              <Box p={4}>
+                <Heading size="md" mb={2}>{recipe.name}</Heading>
+                <HStack spacing={3} color="gray.600" fontSize="sm">
+                  <Text>{recipe.ingredients.length} ingredients</Text>
+                  <Text>•</Text>
+                  <Text>Serves {recipe.servings}</Text>
+                  {recipe.category && (
+                    <>
+                      <Text>•</Text>
+                      <Text>{recipe.category}</Text>
+                    </>
+                  )}
+                </HStack>
+                
+                {/* Ingredient Match Information */}
+                {selectedIngredients.length > 0 && (
+                  <Box mt={3} pt={3} borderTopWidth="1px" borderColor="gray.100">
+                    <Flex justify="space-between" align="center" mb={2}>
+                      <Text fontSize="sm" fontWeight="medium">
+                        Your Ingredients: {getIngredientMatchInfo(recipe).matchedCount}/{getIngredientMatchInfo(recipe).totalSelected}
+                      </Text>
+                      <Badge 
+                        colorScheme={getIngredientMatchInfo(recipe).matchPercentage > 70 ? "green" : getIngredientMatchInfo(recipe).matchPercentage > 40 ? "yellow" : "red"}
+                        fontSize="xs"
+                      >
+                        {getIngredientMatchInfo(recipe).matchPercentage}% match
+                      </Badge>
+                    </Flex>
+                    <Progress 
+                      value={getIngredientMatchInfo(recipe).matchPercentage} 
+                      size="sm" 
+                      colorScheme={getIngredientMatchInfo(recipe).matchPercentage > 70 ? "green" : getIngredientMatchInfo(recipe).matchPercentage > 40 ? "yellow" : "red"}
+                      mb={2}
+                    />
+                    
+                    {getIngredientMatchInfo(recipe).missingIngredients.length > 0 && (
+                      <Box mt={2}>
+                        <Text fontSize="xs" color="gray.500" mb={1}>
+                          You'll also need:
+                        </Text>
+                        <Wrap spacing={1}>
+                          {getIngredientMatchInfo(recipe).missingIngredients.map((ingredient, index) => (
+                            <WrapItem key={index}>
+                              <Tag 
+                                size="xs" 
+                                colorScheme="gray" 
+                                variant="outline"
+                                borderRadius="md"
+                                px={1}
+                                py={0.5}
+                                fontSize="10px"
+                                whiteSpace="nowrap"
+                                maxW="100px"
+                                overflow="hidden"
+                                textOverflow="ellipsis"
+                              >
+                                {ingredient.split(' ').slice(-2).join(' ')}
+                              </Tag>
+                            </WrapItem>
+                          ))}
+                          {getIngredientMatchInfo(recipe).hasMoreMissing && (
+                            <WrapItem>
+                              <Tag 
+                                size="xs" 
+                                colorScheme="gray" 
+                                variant="outline"
+                                borderRadius="md"
+                                px={1}
+                                py={0.5}
+                                fontSize="10px"
+                              >
+                                +{recipe.ingredients.length - getIngredientMatchInfo(recipe).matchedCount - getIngredientMatchInfo(recipe).missingIngredients.length} more
+                              </Tag>
+                            </WrapItem>
+                          )}
+                        </Wrap>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+              </Box>
+            </Box>
           ))}
         </SimpleGrid>
         
@@ -724,10 +696,16 @@ const RecipeFinder = () => {
             <Button
               colorScheme="orange"
               size="lg"
-              onClick={handleLoadMore}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleLoadMore();
+              }}
               isLoading={isLoading}
               loadingText="Loading more recipes..."
               leftIcon={<AddIcon />}
+              zIndex={5}
+              position="relative"
             >
               See More Recipes
             </Button>
@@ -815,31 +793,31 @@ const RecipeFinder = () => {
                 );
                 
                 return (
-                  <ListItem 
-                    key={ingredient}
-                    px={4}
-                    py={2}
-                    cursor="pointer"
-                    bg={index === highlightedIndex ? "orange.50" : "transparent"}
-                    _hover={{ bg: "orange.50" }}
-                    onClick={() => {
-                      handleIngredientClick(ingredient)
-                      setSearchTerm('')
-                      setShowSuggestions(false)
-                    }}
-                  >
-                    <HStack>
-                      <Text>{ingredient}</Text>
-                      {index === highlightedIndex && (
+                <ListItem 
+                  key={ingredient}
+                  px={4}
+                  py={2}
+                  cursor="pointer"
+                  bg={index === highlightedIndex ? "orange.50" : "transparent"}
+                  _hover={{ bg: "orange.50" }}
+                  onClick={() => {
+                    handleIngredientClick(ingredient)
+                    setSearchTerm('')
+                    setShowSuggestions(false)
+                  }}
+                >
+                  <HStack>
+                    <Text>{ingredient}</Text>
+                    {index === highlightedIndex && (
                         <Badge 
                           colorScheme={isSelected ? "red" : "orange"} 
                           ml="auto"
                         >
                           {isSelected ? "DELETE" : "Press Enter"}
                         </Badge>
-                      )}
-                    </HStack>
-                  </ListItem>
+                    )}
+                  </HStack>
+                </ListItem>
                 );
               })}
             </List>
