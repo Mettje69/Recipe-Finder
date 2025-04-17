@@ -131,20 +131,37 @@ const Header = () => {
                 </Menu>
               </>
             ) : (
-              <Button
-                as={RouterLink}
-                to="/register"
-                colorScheme="orange"
-                size="md"
-                borderRadius="full"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  boxShadow: 'md'
-                }}
-                transition="all 0.2s ease-in-out"
-              >
-                Register
-              </Button>
+              <>
+                <Button
+                  as={RouterLink}
+                  to="/login"
+                  colorScheme="orange"
+                  size="md"
+                  borderRadius="full"
+                  variant="outline"
+                  _hover={{
+                    transform: 'translateY(-2px)',
+                    boxShadow: 'md'
+                  }}
+                  transition="all 0.2s ease-in-out"
+                >
+                  Login
+                </Button>
+                <Button
+                  as={RouterLink}
+                  to="/register"
+                  colorScheme="orange"
+                  size="md"
+                  borderRadius="full"
+                  _hover={{
+                    transform: 'translateY(-2px)',
+                    boxShadow: 'md'
+                  }}
+                  transition="all 0.2s ease-in-out"
+                >
+                  Register
+                </Button>
+              </>
             )}
           </HStack>
         </Flex>

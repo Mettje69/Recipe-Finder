@@ -4,6 +4,7 @@ import RecipeFinder from './components/RecipeFinder'
 import AddRecipeForm from './components/AddRecipeForm'
 import Header from './components/Header'
 import Register from './components/Register'
+import Login from './components/Login'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import './App.css'
 
@@ -24,6 +25,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<RecipeFinder />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/login" element={<Login />} />
                 <Route
                   path="/add"
                   element={
