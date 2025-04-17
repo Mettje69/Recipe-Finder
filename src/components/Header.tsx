@@ -1,11 +1,28 @@
-import { Box, Heading, Text, HStack, Icon, Container, Button, Flex, useColorModeValue } from '@chakra-ui/react'
-import { SearchIcon, AddIcon, StarIcon } from '@chakra-ui/icons'
+import { 
+  Box, 
+  Heading, 
+  Text, 
+  HStack, 
+  Icon, 
+  Container, 
+  Button, 
+  Flex, 
+  useColorModeValue, 
+  Menu, 
+  MenuButton, 
+  MenuList, 
+  MenuItem, 
+  Avatar 
+} from '@chakra-ui/react'
+import { SearchIcon, AddIcon, StarIcon, ChevronDownIcon } from '@chakra-ui/icons'
 import { Link as RouterLink } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 const Header = () => {
   const headerBg = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('orange.100', 'gray.700')
   const titleColor = useColorModeValue('orange.500', 'orange.300')
+  const { user, isAuthenticated, logout } = useAuth()
 
   return (
     <Box 
@@ -79,21 +96,57 @@ const Header = () => {
             </Box>
           </HStack>
           
-          <Button
-            as={RouterLink}
-            to="/add"
-            leftIcon={<AddIcon />}
-            colorScheme="orange"
-            size="md"
-            borderRadius="full"
-            _hover={{
-              transform: 'translateY(-2px)',
-              boxShadow: 'md'
-            }}
-            transition="all 0.2s ease-in-out"
-          >
-            Add Recipe
-          </Button>
+          <HStack spacing={4}>
+            {isAuthenticated ? (
+              <>
+                <Button
+                  as={RouterLink}
+                  to="/add"
+                  leftIcon={<AddIcon />}
+                  colorScheme="orange"
+                  size="md"
+                  borderRadius="full"
+                  _hover={{
+                    transform: 'translateY(-2px)',
+                    boxShadow: 'md'
+                  }}
+                  transition="all 0.2s ease-in-out"
+                >
+                  Add Recipe
+                </Button>
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    rightIcon={<ChevronDownIcon />}
+                    variant="outline"
+                    colorScheme="orange"
+                    size="md"
+                    borderRadius="full"
+                  >
+                    <Avatar size="sm" name={user?.name} />
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem onClick={logout}>Logout</MenuItem>
+                  </MenuList>
+                </Menu>
+              </>
+            ) : (
+              <Button
+                as={RouterLink}
+                to="/register"
+                colorScheme="orange"
+                size="md"
+                borderRadius="full"
+                _hover={{
+                  transform: 'translateY(-2px)',
+                  boxShadow: 'md'
+                }}
+                transition="all 0.2s ease-in-out"
+              >
+                Register
+              </Button>
+            )}
+          </HStack>
         </Flex>
       </Container>
     </Box>
