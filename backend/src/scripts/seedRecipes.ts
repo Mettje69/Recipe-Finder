@@ -1,8 +1,28 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Recipe from '../models/Recipe';
+import User from '../models/User';
 
 dotenv.config();
+
+// Create a default user first
+const createDefaultUser = async () => {
+  try {
+    const defaultUser = await User.findOne({ username: 'admin' });
+    if (!defaultUser) {
+      const newUser = new User({
+        username: 'admin',
+        email: 'admin@example.com',
+        password: 'admin123'
+      });
+      return await newUser.save();
+    }
+    return defaultUser;
+  } catch (error) {
+    console.error('Error creating default user:', error);
+    throw error;
+  }
+};
 
 const sampleRecipes = [
   // Italian Cuisine
@@ -1350,22 +1370,30 @@ const sampleRecipes = [
 
 const seedDatabase = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/recipe-finder');
+    await mongoose.connect(process.env.MONGODB_URI!);
     console.log('Connected to MongoDB');
 
     // Clear existing recipes
     await Recipe.deleteMany({});
     console.log('Cleared existing recipes');
 
-    // Insert sample recipes
-    await Recipe.insertMany(sampleRecipes);
-    console.log('Added sample recipes');
+    // Create default user
+    const defaultUser = await createDefaultUser();
+    console.log('Created default user');
 
-    console.log('Database seeding completed');
-    process.exit(0);
+    // Add author to each recipe
+    const recipesWithAuthor = sampleRecipes.map(recipe => ({
+      ...recipe,
+      author: defaultUser._id
+    }));
+
+    // Insert recipes
+    await Recipe.insertMany(recipesWithAuthor);
+    console.log('Database seeded successfully');
+
+    await mongoose.disconnect();
   } catch (error) {
-    console.error('Error seeding database:', error);
-    process.exit(1);
+    console.warn('Error seeding database:', error);
   }
 };
 

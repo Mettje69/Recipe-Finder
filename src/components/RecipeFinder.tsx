@@ -85,9 +85,11 @@ const RecipeFinder = () => {
           case 'name':
             return a.name.localeCompare(b.name);
           case 'cookTime':
-            const aTime = parseInt(a.cookTime.split(' ')[0]);
-            const bTime = parseInt(b.cookTime.split(' ')[0]);
-            return aTime - bTime;
+            const parseTime = (time: string) => {
+              const minutes = parseInt(time.split(' ')[0]);
+              return isNaN(minutes) ? 0 : minutes;
+            };
+            return parseTime(a.cookTime) - parseTime(b.cookTime);
           case 'difficulty':
             const difficultyOrder = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
             return difficultyOrder[a.difficulty as keyof typeof difficultyOrder] - 
@@ -108,16 +110,33 @@ const RecipeFinder = () => {
   useEffect(() => {
     const loadInitialRecipes = async () => {
       setIsLoading(true)
+      console.log('RecipeFinder: Starting to load recipes...')
       try {
+        console.log('RecipeFinder: Calling api.getAllRecipes()')
         const allRecipes = await api.getAllRecipes()
-        setRecipes(allRecipes)
-        setDisplayedRecipes(allRecipes.slice(0, RECIPES_PER_PAGE))
-        setHasMore(allRecipes.length > RECIPES_PER_PAGE)
+        console.log('RecipeFinder: Received recipes:', allRecipes)
+        
+        if (allRecipes && allRecipes.length > 0) {
+          console.log('RecipeFinder: Setting recipes state with', allRecipes.length, 'recipes')
+          setRecipes(allRecipes)
+          // Don't display any recipes initially
+          setDisplayedRecipes([])
+          setHasMore(false)
+        } else {
+          console.log('RecipeFinder: No recipes received from API')
+          toast({
+            title: "No recipes found",
+            description: "There are no recipes available at the moment.",
+            status: "warning",
+            duration: 3000,
+            isClosable: true,
+          })
+        }
       } catch (error) {
-        console.error('Error loading recipes:', error)
+        console.error('RecipeFinder: Error loading recipes:', error)
         toast({
           title: "Error loading recipes",
-          description: "There was a problem loading recipes. Please try again.",
+          description: error instanceof Error ? error.message : "There was a problem loading recipes. Please try again.",
           status: "error",
           duration: 3000,
           isClosable: true,
@@ -239,20 +258,20 @@ const RecipeFinder = () => {
         }
 
         // Apply additional filters
-          if (filters.difficulty) {
+        if (filters.difficulty) {
           filteredRecipes = filteredRecipes.filter(recipe => 
             recipe.difficulty === filters.difficulty
           );
-          }
-          
-          if (filters.category) {
+        }
+        
+        if (filters.category) {
           filteredRecipes = filteredRecipes.filter(recipe => 
             recipe.category === filters.category
           );
-          }
-          
-          if (filters.maxCookTime) {
-            filteredRecipes = filteredRecipes.filter(recipe => {
+        }
+        
+        if (filters.maxCookTime) {
+          filteredRecipes = filteredRecipes.filter(recipe => {
             const cookTime = parseInt(recipe.cookTime.split(' ')[0]);
             return !isNaN(cookTime) && cookTime <= filters.maxCookTime!;
           });
@@ -261,31 +280,30 @@ const RecipeFinder = () => {
         // Sort recipes
         const sortedRecipes = sortRecipes(filteredRecipes, sortBy);
         
-        setRecipes(sortedRecipes);
+        // Update displayed recipes without modifying the original recipes list
         setDisplayedRecipes(sortedRecipes.slice(0, RECIPES_PER_PAGE));
         setHasMore(sortedRecipes.length > RECIPES_PER_PAGE);
         setPage(1);
       } catch (error) {
         console.error('Error filtering recipes:', error);
+        toast({
+          title: "Error filtering recipes",
+          description: "There was a problem filtering recipes. Please try again.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
       } finally {
         setIsLoading(false);
       }
     }, 150); // Debounce delay
-  }, [sortRecipes]);
+  }, [sortRecipes, toast]);
     
   // Update recipes when filters or ingredients change
   useEffect(() => {
-    const loadAndFilterRecipes = async () => {
-      try {
-        const allRecipes = await api.getAllRecipes();
-        debouncedFilterAndSort(selectedIngredients, filters, sortBy, allRecipes);
-      } catch (error) {
-        console.error('Error loading recipes:', error);
-      }
-    };
-
-    loadAndFilterRecipes();
-  }, [selectedIngredients, filters, sortBy, debouncedFilterAndSort]);
+    // Use existing recipes instead of making a new API call
+    debouncedFilterAndSort(selectedIngredients, filters, sortBy, recipes);
+  }, [selectedIngredients, filters, sortBy, debouncedFilterAndSort, recipes]);
 
   const handleFilterChange = (filterKey: keyof RecipeFilters, value: string | number) => {
     const newFilters = { ...filters, [filterKey]: value };
@@ -311,26 +329,21 @@ const RecipeFinder = () => {
   const searchRecipes = async (ingredients: string[], filters: RecipeFilters) => {
     setIsLoading(true)
     try {
-      console.log('Searching with ingredients:', ingredients)
-      console.log('Filters:', filters)
-      
-      // If no ingredients are selected and no filters are applied, show no recipes
+      // If no ingredients are selected and no filters are applied, show all recipes
       if (ingredients.length === 0 && Object.keys(filters).length === 0) {
-        setRecipes([])
-        setDisplayedRecipes([])
-        setHasMore(false)
-        return
+        const allRecipes = await api.getAllRecipes();
+        setRecipes(allRecipes);
+        setDisplayedRecipes(allRecipes.slice(0, RECIPES_PER_PAGE));
+        setHasMore(allRecipes.length > RECIPES_PER_PAGE);
+        return;
       }
       
       const matchedRecipes = await api.searchRecipes(ingredients, filters)
-      console.log('Found recipes:', matchedRecipes.length)
       setRecipes(matchedRecipes)
-      // Reset pagination and only show first page
       setPage(1)
       setDisplayedRecipes(matchedRecipes.slice(0, RECIPES_PER_PAGE))
       setHasMore(matchedRecipes.length > RECIPES_PER_PAGE)
     } catch (error) {
-      console.error('Error finding recipes:', error)
       toast({
         title: "Error searching recipes",
         description: "There was a problem searching for recipes. Please try again.",
@@ -345,7 +358,6 @@ const RecipeFinder = () => {
 
   // Create a simple, direct function to handle recipe clicks
   const handleRecipeClick = useCallback((recipe: Recipe) => {
-    console.log('Opening recipe:', recipe.name);
     setSelectedRecipe(recipe);
     onOpen();
   }, [onOpen]);
@@ -489,7 +501,11 @@ const RecipeFinder = () => {
         const bValue: number = difficultyOrder[bDifficulty];
         return aValue - bValue;
       } else if (sortBy === 'cookTime') {
-        return (a.cookTime || 0) - (b.cookTime || 0);
+        const parseTime = (time: string) => {
+          const minutes = parseInt(time.split(' ')[0]);
+          return isNaN(minutes) ? 0 : minutes;
+        };
+        return parseTime(a.cookTime) - parseTime(b.cookTime);
       }
       return 0;
     });
@@ -497,7 +513,24 @@ const RecipeFinder = () => {
 
   // Memoize the recipe list rendering
   const RecipeList = useMemo(() => {
-    // Don't show any recipes until ingredients are selected
+    // Show loading state
+    if (isLoading && displayedRecipes.length === 0) {
+      return (
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 4, md: 4 }}>
+          {[1, 2, 3].map((n) => (
+            <Box key={`skeleton-${n}`} borderWidth="1px" borderRadius="xl" overflow="hidden">
+              <Skeleton height="200px" />
+              <Box p={4}>
+                <Skeleton height="20px" mb={2} />
+                <Skeleton height="30px" width="100px" />
+              </Box>
+            </Box>
+          ))}
+        </SimpleGrid>
+      );
+    }
+
+    // Show empty state when no ingredients are selected
     if (selectedIngredients.length === 0) {
       return (
         <Box 
@@ -512,28 +545,13 @@ const RecipeFinder = () => {
         >
           <Text fontSize="xl" fontWeight="medium" mb={2}>Select Ingredients to Find Recipes</Text>
           <Text color="gray.600">
-            Choose ingredients from the list to see matching recipes
+            Choose ingredients from the list to discover matching recipes
           </Text>
         </Box>
       );
     }
 
-    if (isLoading && displayedRecipes.length === 0) {
-      return (
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 4, md: 4 }}>
-          {[1, 2, 3].map((n) => (
-            <Box key={n} borderWidth="1px" borderRadius="xl" overflow="hidden">
-              <Skeleton height="200px" />
-              <Box p={4}>
-                <Skeleton height="20px" mb={2} />
-                <Skeleton height="30px" width="100px" />
-              </Box>
-            </Box>
-          ))}
-        </SimpleGrid>
-      );
-    }
-
+    // Show empty state when no recipes match the selected ingredients
     if (displayedRecipes.length === 0) {
       return (
         <Box 
@@ -554,12 +572,13 @@ const RecipeFinder = () => {
       );
     }
 
+    // Show recipes
     return (
       <>
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 4, md: 4 }}>
           {displayedRecipes.map((recipe) => (
             <Box 
-              key={recipe.id}
+              key={recipe.id || `recipe-${recipe.name}`}
               onClick={() => handleRecipeClick(recipe)}
               borderWidth="1px"
               borderRadius="xl"
@@ -601,129 +620,43 @@ const RecipeFinder = () => {
                       {recipe.difficulty}
                     </Tag>
                   )}
-                  <Tag size="md" colorScheme="whiteAlpha" variant="solid">
+                  <Tag size="md" colorScheme="orange" variant="solid">
                     {recipe.cookTime}
                   </Tag>
                 </HStack>
               </Box>
               <Box p={4}>
-                <Heading size="md" mb={2}>{recipe.name}</Heading>
-                <HStack spacing={3} color="gray.600" fontSize="sm">
-                  <Text>{recipe.ingredients.length} ingredients</Text>
-                  <Text>•</Text>
-                  <Text>Serves {recipe.servings}</Text>
-                  {recipe.category && (
-                    <>
-                      <Text>•</Text>
-                      <Text>{recipe.category}</Text>
-                    </>
-                  )}
-                </HStack>
-                
-                {/* Ingredient Match Information */}
-                {selectedIngredients.length > 0 && (
-                  <Box mt={3} pt={3} borderTopWidth="1px" borderColor="gray.100">
-                    <Flex justify="space-between" align="center" mb={2}>
-                      <Text fontSize="sm" fontWeight="medium">
-                        Your Ingredients: {getIngredientMatchInfo(recipe).matchedCount}/{getIngredientMatchInfo(recipe).totalSelected}
-                      </Text>
-                      <Badge 
-                        colorScheme={getIngredientMatchInfo(recipe).matchPercentage > 70 ? "green" : getIngredientMatchInfo(recipe).matchPercentage > 40 ? "yellow" : "red"}
-                        fontSize="xs"
-                      >
-                        {getIngredientMatchInfo(recipe).matchPercentage}% match
-                      </Badge>
-                    </Flex>
-                    <Progress 
-                      value={getIngredientMatchInfo(recipe).matchPercentage} 
-                      size="sm" 
-                      colorScheme={getIngredientMatchInfo(recipe).matchPercentage > 70 ? "green" : getIngredientMatchInfo(recipe).matchPercentage > 40 ? "yellow" : "red"}
-                      mb={2}
-                    />
-                    
-                    {getIngredientMatchInfo(recipe).missingIngredients.length > 0 && (
-                      <Box mt={2}>
-                        <Text fontSize="xs" color="gray.500" mb={1}>
-                          You'll also need:
-                        </Text>
-                        <Wrap spacing={1}>
-                          {getIngredientMatchInfo(recipe).missingIngredients.map((ingredient, index) => (
-                            <WrapItem key={index}>
-                              <Tag 
-                                size="xs" 
-                                colorScheme="gray" 
-                                variant="outline"
-                                borderRadius="md"
-                                px={1}
-                                py={0.5}
-                                fontSize="10px"
-                                whiteSpace="nowrap"
-                                maxW="100px"
-                                overflow="hidden"
-                                textOverflow="ellipsis"
-                              >
-                                {ingredient.split(' ').slice(-2).join(' ')}
-                              </Tag>
-                            </WrapItem>
-                          ))}
-                          {getIngredientMatchInfo(recipe).hasMoreMissing && (
-                            <WrapItem>
-                              <Tag 
-                                size="xs" 
-                                colorScheme="gray" 
-                                variant="outline"
-                                borderRadius="md"
-                                px={1}
-                                py={0.5}
-                                fontSize="10px"
-                              >
-                                +{recipe.ingredients.length - getIngredientMatchInfo(recipe).matchedCount - getIngredientMatchInfo(recipe).missingIngredients.length} more
-                              </Tag>
-                            </WrapItem>
-                          )}
-                        </Wrap>
-                      </Box>
-                    )}
-                  </Box>
-                )}
+                <Heading size="md" mb={2} noOfLines={1}>
+                  {recipe.name}
+                </Heading>
+                <Text color="gray.600" noOfLines={2}>
+                  {recipe.description}
+                </Text>
               </Box>
             </Box>
           ))}
         </SimpleGrid>
-        
-        {hasMore && (
-          <Flex justify="center" mt={8}>
-            <Button
-              colorScheme="orange"
-              size="lg"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleLoadMore();
-              }}
-              isLoading={isLoading}
-              loadingText="Loading more recipes..."
-              leftIcon={<AddIcon />}
-              zIndex={5}
-              position="relative"
-            >
-              See More Recipes
-            </Button>
-          </Flex>
-        )}
       </>
     );
-  }, [displayedRecipes, selectedIngredients, isLoading, hasMore, handleRecipeClick]);
+  }, [displayedRecipes, isLoading, handleRecipeClick]);
+
+  // Add debug info panel
+  const debugInfo = useMemo(() => {
+    return {
+      totalRecipes: recipes.length,
+      displayedRecipes: displayedRecipes.length,
+      isLoading,
+      searchTerm,
+      selectedIngredients: selectedIngredients.length,
+      filters,
+      sortBy,
+      page,
+      hasMore
+    };
+  }, [recipes.length, displayedRecipes.length, isLoading, searchTerm, selectedIngredients.length, filters, sortBy, page, hasMore]);
 
   return (
-    <VStack 
-      spacing={6} 
-      w="100%" 
-      maxW="100%" 
-      position="relative"
-      px={0}
-      overflowX="hidden"
-    >
+    <VStack spacing={6} align="stretch">
       {/* Minimalistic search bar */}
       <Box 
         w="100%" 
@@ -841,7 +774,7 @@ const RecipeFinder = () => {
                 {selectedIngredients.length > 0 ? (
                   <Wrap maxH="120px" overflowY="auto">
                     {selectedIngredients.map((ingredient) => (
-                      <WrapItem key={ingredient}>
+                      <WrapItem key={`selected-${ingredient}`}>
                         <Tag 
                           size="lg" 
                           borderRadius="full" 
@@ -897,9 +830,9 @@ const RecipeFinder = () => {
                   )
                 ) : (
                   <Box maxH="300px" overflowY="auto">
-                    <Accordion allowMultiple defaultIndex={[]} allowToggle className="custom-accordion">
+                    <Accordion allowMultiple defaultIndex={[]} className="custom-accordion">
                       {ingredientCategories.map((category, index) => (
-                        <AccordionItem key={index} border="none" className="custom-accordion-item">
+                        <AccordionItem key={`category-${category.name}-${index}`} border="none" className="custom-accordion-item">
                           <AccordionButton 
                             _hover={{ bg: 'orange.50' }}
                             _expanded={{ bg: 'orange.50', color: 'orange.500', fontWeight: 'semibold' }}
@@ -920,7 +853,7 @@ const RecipeFinder = () => {
                           <AccordionPanel pb={4} className="custom-accordion-panel">
                             <Wrap>
                               {category.ingredients.map((ingredient) => (
-                                <WrapItem key={ingredient}>
+                                <WrapItem key={`ingredient-${category.name}-${ingredient}`}>
                                   <Tag
                                     size="lg"
                                     borderRadius="full"

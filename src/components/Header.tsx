@@ -15,9 +15,9 @@ import {
   Avatar,
   Portal
 } from '@chakra-ui/react'
-import { SearchIcon, AddIcon, StarIcon, ChevronDownIcon } from '@chakra-ui/icons'
 import { Link as RouterLink } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { SearchIcon, StarIcon, ChevronDownIcon, AddIcon } from '@chakra-ui/icons'
 
 const Header = () => {
   const headerBg = useColorModeValue('white', 'gray.800')
@@ -54,7 +54,7 @@ const Header = () => {
           <Button
             as={RouterLink}
             to="/"
-            leftIcon={<StarIcon />}
+            leftIcon={<AddIcon />}
             colorScheme="orange"
             size="md"
             borderRadius="full"
@@ -84,7 +84,7 @@ const Header = () => {
               }}
               transition="all 0.2s ease-in-out"
             >
-              <Icon as={SearchIcon} w={5} h={5} color="white" />
+              <Icon as={AddIcon} w={5} h={5} color="white" />
             </Box>
             <Box>
               <Heading 

@@ -1,18 +1,4 @@
-import mongoose, { Document } from 'mongoose';
-
-export interface IRecipe extends Document {
-  name: string;
-  description: string;
-  ingredients: string[];
-  instructions: string[];
-  cookTime: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  servings: number;
-  category: string;
-  image: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import mongoose from 'mongoose';
 
 const recipeSchema = new mongoose.Schema({
   name: {
@@ -22,24 +8,28 @@ const recipeSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   ingredients: [{
     type: String,
-    required: true
+    required: true,
+    trim: true
   }],
   instructions: [{
     type: String,
-    required: true
+    required: true,
+    trim: true
   }],
   cookTime: {
-    type: String,
-    required: true
+    type: Number,
+    required: true,
+    min: 1
   },
   difficulty: {
     type: String,
-    enum: ['Easy', 'Medium', 'Hard'],
-    required: true
+    required: true,
+    enum: ['Easy', 'Medium', 'Hard']
   },
   servings: {
     type: Number,
@@ -48,17 +38,38 @@ const recipeSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   image: {
     type: String,
+    required: true,
+    trim: true
+  },
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
-}, {
-  timestamps: true
+});
+
+// Update the updatedAt timestamp before saving
+recipeSchema.pre('save', function(next) {
+  this.updatedAt = new Date();
+  next();
 });
 
 // Index for searching recipes by ingredients
 recipeSchema.index({ ingredients: 'text' });
 
-export default mongoose.model<IRecipe>('Recipe', recipeSchema); 
+const Recipe = mongoose.model('Recipe', recipeSchema);
+
+export default Recipe; 
