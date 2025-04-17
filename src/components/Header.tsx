@@ -12,7 +12,8 @@ import {
   MenuButton, 
   MenuList, 
   MenuItem, 
-  Avatar 
+  Avatar,
+  Portal
 } from '@chakra-ui/react'
 import { SearchIcon, AddIcon, StarIcon, ChevronDownIcon } from '@chakra-ui/icons'
 import { Link as RouterLink } from 'react-router-dom'
@@ -35,6 +36,7 @@ const Header = () => {
       maxW="100%"
       pr="0"
       position="relative"
+      zIndex={1000}
       _before={{
         content: '""',
         position: 'absolute',
@@ -125,9 +127,11 @@ const Header = () => {
                   >
                     <Avatar size="sm" name={user?.name} />
                   </MenuButton>
-                  <MenuList>
-                    <MenuItem onClick={logout}>Logout</MenuItem>
-                  </MenuList>
+                  <Portal>
+                    <MenuList zIndex={2000} position="relative">
+                      <MenuItem onClick={logout}>Logout</MenuItem>
+                    </MenuList>
+                  </Portal>
                 </Menu>
               </>
             ) : (

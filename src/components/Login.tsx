@@ -45,18 +45,33 @@ const Login: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      // Check if the response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.error('Server returned non-JSON response:', contentType);
+        throw new Error('Server returned an invalid response. Please try again later.');
+      }
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (error) {
+        console.error('Error parsing response:', error);
+        throw new Error('Unable to connect to the server. Please check if the server is running.');
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+        throw new Error(data.error || 'Invalid email or password');
       }
 
       login(data.token, data.user);
@@ -69,6 +84,7 @@ const Login: React.FC = () => {
       });
       navigate('/');
     } catch (err: any) {
+      console.error('Login error:', err);
       toast({
         title: 'Error',
         description: err.message || 'An error occurred during login',
