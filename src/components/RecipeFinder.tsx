@@ -119,9 +119,9 @@ const RecipeFinder = () => {
         if (allRecipes && allRecipes.length > 0) {
           console.log('RecipeFinder: Setting recipes state with', allRecipes.length, 'recipes')
           setRecipes(allRecipes)
-          // Don't display any recipes initially
-          setDisplayedRecipes([])
-          setHasMore(false)
+          // Display initial recipes
+          setDisplayedRecipes(allRecipes.slice(0, RECIPES_PER_PAGE))
+          setHasMore(allRecipes.length > RECIPES_PER_PAGE)
         } else {
           console.log('RecipeFinder: No recipes received from API')
           toast({
@@ -636,9 +636,21 @@ const RecipeFinder = () => {
             </Box>
           ))}
         </SimpleGrid>
+        {hasMore && (
+          <Box textAlign="center" mt={8}>
+            <Button
+              onClick={handleLoadMore}
+              colorScheme="orange"
+              size="lg"
+              isLoading={isLoading}
+            >
+              Load More Recipes
+            </Button>
+          </Box>
+        )}
       </>
     );
-  }, [displayedRecipes, isLoading, handleRecipeClick]);
+  }, [displayedRecipes, isLoading, handleRecipeClick, hasMore]);
 
   // Add debug info panel
   const debugInfo = useMemo(() => {
