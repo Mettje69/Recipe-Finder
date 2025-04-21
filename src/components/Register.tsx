@@ -21,7 +21,7 @@ import {
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 
 const Register: React.FC = () => {
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +33,7 @@ const Register: React.FC = () => {
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    if (!name) newErrors.name = 'Name is required';
+    if (!username) newErrors.username = 'Username is required';
     if (!email) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Email is invalid';
     if (!password) newErrors.password = 'Password is required';
@@ -53,7 +53,7 @@ const Register: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ username, email, password }),
       });
 
       const data = await response.json();
@@ -62,7 +62,11 @@ const Register: React.FC = () => {
         throw new Error(data.error || 'Registration failed');
       }
 
-      login(data.token, data.user);
+      login(data.token, {
+        id: data.user.id,
+        email: data.user.email,
+        username: data.user.username
+      });
       toast({
         title: 'Account created.',
         description: "We've created your account for you.",
@@ -106,15 +110,15 @@ const Register: React.FC = () => {
 
           <form onSubmit={handleSubmit} style={{ width: '100%' }}>
             <VStack spacing="4">
-              <FormControl isInvalid={!!errors.name}>
-                <FormLabel>Name</FormLabel>
+              <FormControl isInvalid={!!errors.username}>
+                <FormLabel>Username</FormLabel>
                 <Input
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter your username"
                 />
-                <FormErrorMessage>{errors.name}</FormErrorMessage>
+                <FormErrorMessage>{errors.username}</FormErrorMessage>
               </FormControl>
 
               <FormControl isInvalid={!!errors.email}>

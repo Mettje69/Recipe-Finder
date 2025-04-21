@@ -1,47 +1,47 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import User, { IUser } from '../models/User';
+import { auth } from '../middleware/auth';
 
 const router = express.Router();
-
-// Mock user database
-const users = [
-  {
-    id: '1',
-    email: 'test@example.com',
-    password: 'password123', // In a real app, this would be hashed
-    name: 'Test User'
-  }
-];
 
 // Register a new user
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, username } = req.body;
 
     // Check if user already exists
-    const existingUser = users.find(user => user.email === email);
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
     // Create new user
-    const newUser = {
-      id: (users.length + 1).toString(),
+    const newUser = new User({
       email,
-      password, // In a real app, this would be hashed
-      name
-    };
-    users.push(newUser);
+      password,
+      username
+    });
+
+    await newUser.save();
 
     // Generate token
     const token = jwt.sign(
-      { userId: newUser.id },
+      { userId: newUser._id },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '7d' }
     );
 
-    res.status(201).json({ user: { id: newUser.id, email: newUser.email, name: newUser.name }, token });
+    res.status(201).json({ 
+      user: { 
+        id: newUser._id, 
+        email: newUser.email, 
+        username: newUser.username 
+      }, 
+      token 
+    });
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(400).json({ error: 'Error creating user' });
   }
 });
@@ -52,37 +52,66 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     // Find user
-    const user = users.find(user => user.email === email);
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ error: 'Invalid login credentials' });
     }
 
     // Check password
-    if (user.password !== password) {
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
       return res.status(401).json({ error: 'Invalid login credentials' });
     }
 
     // Generate token
     const token = jwt.sign(
-      { userId: user.id },
+      { userId: user._id },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '7d' }
     );
 
-    res.json({ user: { id: user.id, email: user.email, name: user.name }, token });
+    res.json({ 
+      user: { 
+        id: user._id, 
+        email: user.email, 
+        username: user.username 
+      }, 
+      token 
+    });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(400).json({ error: 'Error logging in' });
   }
 });
 
 // Get current user
-router.get('/me', (req, res) => {
+router.get('/me', auth, async (req, res) => {
   try {
-    // In a real app, this would use the auth middleware
-    // For now, just return a mock user
-    res.json({ user: users[0] });
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({ 
+      user: { 
+        id: user._id, 
+        email: user.email, 
+        username: user.username 
+      } 
+    });
   } catch (error) {
+    console.error('Get user error:', error);
     res.status(500).json({ error: 'Error fetching user data' });
+  }
+});
+
+// Temporary endpoint to list all users (REMOVE IN PRODUCTION)
+router.get('/users', async (req, res) => {
+  try {
+    const users = await User.find().select('-password');
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Error fetching users' });
   }
 });
 

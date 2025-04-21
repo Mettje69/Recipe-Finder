@@ -1,6 +1,16 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+// Define the User interface
+export interface IUser extends mongoose.Document {
+  username: string;
+  email: string;
+  password: string;
+  createdAt: Date;
+  updatedAt: Date;
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -49,6 +59,6 @@ userSchema.methods.comparePassword = async function(candidatePassword: string): 
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model<IUser>('User', userSchema);
 
 export default User; 
