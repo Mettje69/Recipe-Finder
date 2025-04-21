@@ -227,93 +227,100 @@ const RecipeFinder = () => {
       .slice(0, 10);
   }, [allIngredients, searchTerm]);
 
-  // Debounced filter and sort function
-  const debouncedFilterAndSort = useCallback((
-    selectedIngredients: string[], 
-    filters: RecipeFilters, 
-    sortBy: SortOption,
-    allRecipes: Recipe[]
-  ) => {
-    if (filterTimeoutRef.current) {
-      clearTimeout(filterTimeoutRef.current);
+  // Memoize the filtered and sorted recipes
+  const filteredAndSortedRecipes = useMemo(() => {
+    // Start with all recipes
+    let filteredRecipes = [...recipes];
+
+    // Apply ingredient filtering
+    if (selectedIngredients.length > 0) {
+      const ingredientsLower = selectedIngredients.map(i => i.toLowerCase());
+      filteredRecipes = filteredRecipes.filter(recipe => {
+        return ingredientsLower.some(selectedIngredient => 
+          recipe.ingredients.some(recipeIngredient => 
+            recipeIngredient.toLowerCase().includes(selectedIngredient)
+          )
+        );
+      });
     }
 
-    filterTimeoutRef.current = window.setTimeout(() => {
-      setIsLoading(true);
-      try {
-        // Start with all recipes
-        let filteredRecipes = [...allRecipes];
+    // Apply filters
+    if (filters.difficulty) {
+      filteredRecipes = filteredRecipes.filter(recipe => 
+        recipe.difficulty === filters.difficulty
+      );
+    }
+    if (filters.category) {
+      filteredRecipes = filteredRecipes.filter(recipe => 
+        recipe.category === filters.category
+      );
+    }
+    if (filters.maxCookTime) {
+      filteredRecipes = filteredRecipes.filter(recipe => {
+        const cookTime = parseInt(recipe.cookTime.split(' ')[0]);
+        return !isNaN(cookTime) && cookTime <= filters.maxCookTime!;
+      });
+    }
 
-        // Apply ingredient filtering only if ingredients are selected
-        if (selectedIngredients.length > 0) {
-          const ingredientsLower = selectedIngredients.map(i => i.toLowerCase());
-          filteredRecipes = filteredRecipes.filter(recipe => {
-            // Check if any of the selected ingredients are in the recipe's ingredients list
-            return ingredientsLower.some(selectedIngredient => 
-              recipe.ingredients.some(recipeIngredient => 
-                recipeIngredient.toLowerCase().includes(selectedIngredient)
-              )
-            );
-          });
-        }
+    // Sort the recipes
+    return sortRecipes(filteredRecipes, sortBy);
+  }, [recipes, selectedIngredients, filters, sortBy, sortRecipes]);
 
-        // Apply additional filters
-        if (filters.difficulty) {
-          filteredRecipes = filteredRecipes.filter(recipe => 
-            recipe.difficulty === filters.difficulty
-          );
-        }
-        
-        if (filters.category) {
-          filteredRecipes = filteredRecipes.filter(recipe => 
-            recipe.category === filters.category
-          );
-        }
-        
-        if (filters.maxCookTime) {
-          filteredRecipes = filteredRecipes.filter(recipe => {
-            const cookTime = parseInt(recipe.cookTime.split(' ')[0]);
-            return !isNaN(cookTime) && cookTime <= filters.maxCookTime!;
-          });
-        }
-        
-        // Sort recipes
-        const sortedRecipes = sortRecipes(filteredRecipes, sortBy);
-        
-        // Update displayed recipes without modifying the original recipes list
-        setDisplayedRecipes(sortedRecipes.slice(0, RECIPES_PER_PAGE));
-        setHasMore(sortedRecipes.length > RECIPES_PER_PAGE);
-        setPage(1);
-      } catch (error) {
-        console.error('Error filtering recipes:', error);
-        toast({
-          title: "Error filtering recipes",
-          description: "There was a problem filtering recipes. Please try again.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }, 150); // Debounce delay
-  }, [sortRecipes, toast]);
-    
-  // Update recipes when filters or ingredients change
+  // Update displayed recipes when filters or pagination changes
   useEffect(() => {
-    // Use existing recipes instead of making a new API call
-    debouncedFilterAndSort(selectedIngredients, filters, sortBy, recipes);
-  }, [selectedIngredients, filters, sortBy, debouncedFilterAndSort, recipes]);
+    const startIndex = 0;
+    const endIndex = page * RECIPES_PER_PAGE;
+    const newDisplayedRecipes = filteredAndSortedRecipes.slice(startIndex, endIndex);
+    setDisplayedRecipes(newDisplayedRecipes);
+    setHasMore(endIndex < filteredAndSortedRecipes.length);
+  }, [filteredAndSortedRecipes, page, RECIPES_PER_PAGE]);
 
-  const handleFilterChange = (filterKey: keyof RecipeFilters, value: string | number) => {
-    const newFilters = { ...filters, [filterKey]: value };
-    setFilters(newFilters);
+  // Load more recipes when "See more" is clicked
+  const handleLoadMore = useCallback(() => {
+    setPage(prev => prev + 1);
+  }, []);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [selectedIngredients, filters, sortBy]);
+
+  // Create a simple, direct function to handle recipe clicks
+  const handleRecipeClick = useCallback((recipe: Recipe) => {
+    setSelectedRecipe(recipe);
+    onOpen();
+  }, [onOpen]);
+
+  // Handle search term changes
+  const handleSearchTermChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    setHighlightedIndex(0);
+    setShowSuggestions(value.trim() !== '');
   };
 
-  const handleSortChange = (newSortBy: SortOption) => {
-    setSortBy(newSortBy);
+  // Handle key press in search input
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (showSuggestions && filteredIngredients.length > 0) {
+        const selectedIngredient = filteredIngredients[highlightedIndex];
+        if (selectedIngredient) {
+          handleIngredientClick(selectedIngredient);
+        }
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedIndex(prev => prev < filteredIngredients.length - 1 ? prev + 1 : prev);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIndex(prev => prev > 0 ? prev - 1 : 0);
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
+    }
   };
 
+  // Handle ingredient selection
   const handleIngredientClick = useCallback((ingredient: string) => {
     if (!selectedIngredients.includes(ingredient)) {
       setSelectedIngredients(prev => [...prev, ingredient]);
@@ -322,194 +329,20 @@ const RecipeFinder = () => {
     }
   }, [selectedIngredients]);
 
+  // Handle ingredient removal
   const handleRemoveIngredient = useCallback((ingredient: string) => {
     setSelectedIngredients(prev => prev.filter(i => i !== ingredient));
   }, []);
 
-  const searchRecipes = async (ingredients: string[], filters: RecipeFilters) => {
-    setIsLoading(true)
-    try {
-      // If no ingredients are selected and no filters are applied, show all recipes
-      if (ingredients.length === 0 && Object.keys(filters).length === 0) {
-        const allRecipes = await api.getAllRecipes();
-        setRecipes(allRecipes);
-        setDisplayedRecipes(allRecipes.slice(0, RECIPES_PER_PAGE));
-        setHasMore(allRecipes.length > RECIPES_PER_PAGE);
-        return;
-      }
-      
-      const matchedRecipes = await api.searchRecipes(ingredients, filters)
-      setRecipes(matchedRecipes)
-      setPage(1)
-      setDisplayedRecipes(matchedRecipes.slice(0, RECIPES_PER_PAGE))
-      setHasMore(matchedRecipes.length > RECIPES_PER_PAGE)
-    } catch (error) {
-      toast({
-        title: "Error searching recipes",
-        description: "There was a problem searching for recipes. Please try again.",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Create a simple, direct function to handle recipe clicks
-  const handleRecipeClick = useCallback((recipe: Recipe) => {
-    setSelectedRecipe(recipe);
-    onOpen();
-  }, [onOpen]);
-
-  // Debounced search term update
-  const handleSearchTermChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    setHighlightedIndex(0);
-    
-    if (value.trim() !== '') {
-      setShowSuggestions(true);
-    } else {
-      setShowSuggestions(false);
-    }
+  // Handle filter changes
+  const handleFilterChange = (filterKey: keyof RecipeFilters, value: string | number) => {
+    setFilters(prev => ({ ...prev, [filterKey]: value }));
   };
 
-  // Handle key press in search input
-  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      
-      // Check if the search term matches an already selected ingredient
-      const exactMatch = selectedIngredients.find(
-        ingredient => ingredient.toLowerCase() === searchTerm.toLowerCase()
-      );
-      
-      if (exactMatch) {
-        // If it's an exact match, remove the ingredient
-        handleRemoveIngredient(exactMatch);
-        setSearchTerm('');
-        setShowSuggestions(false);
-        return;
-      }
-      
-      // If suggestions are shown, select the highlighted suggestion
-      if (showSuggestions && filteredIngredients.length > 0) {
-        const selectedIngredient = filteredIngredients[highlightedIndex]
-        if (selectedIngredient) {
-          // Check if the ingredient is already selected
-          const isAlreadySelected = selectedIngredients.some(
-            selected => selected.toLowerCase() === selectedIngredient.toLowerCase()
-          );
-          
-          if (isAlreadySelected) {
-            // If it's already selected, remove it
-            handleRemoveIngredient(selectedIngredient);
-          } else {
-            // If it's not selected, add it
-            setSelectedIngredients(prev => [...prev, selectedIngredient]);
-          }
-          
-          setSearchTerm('');
-          setShowSuggestions(false);
-        }
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setHighlightedIndex(prev => 
-        prev < filteredIngredients.length - 1 ? prev + 1 : prev
-      )
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setHighlightedIndex(prev => prev > 0 ? prev - 1 : 0)
-    } else if (e.key === 'Escape') {
-      setShowSuggestions(false)
-    }
-  }
-
-  // Close suggestions when clicking outside
-  useOutsideClick({
-    ref: suggestionsRef as React.RefObject<HTMLElement>,
-    handler: () => setShowSuggestions(false),
-  })
-
-  // Calculate ingredient match information for a recipe
-  const getIngredientMatchInfo = (recipe: Recipe) => {
-    try {
-      const matchedIngredients = selectedIngredients.filter(selectedIngredient => 
-        recipe.ingredients.some(recipeIngredient => 
-          recipeIngredient.toLowerCase().includes(selectedIngredient.toLowerCase())
-        )
-      );
-      
-      const missingIngredients = recipe.ingredients.filter(recipeIngredient => 
-        !selectedIngredients.some(selectedIngredient => 
-          recipeIngredient.toLowerCase().includes(selectedIngredient.toLowerCase())
-        )
-      );
-      
-      const matchPercentage = selectedIngredients.length > 0 
-        ? Math.round((matchedIngredients.length / selectedIngredients.length) * 100) 
-        : 0;
-      
-      return {
-        matchedCount: matchedIngredients.length,
-        totalSelected: selectedIngredients.length,
-        missingIngredients: missingIngredients.slice(0, 3),
-        hasMoreMissing: missingIngredients.length > 3,
-        matchPercentage
-      };
-    } catch (error) {
-      console.error('Error calculating match info:', error);
-      return {
-        matchedCount: 0,
-        totalSelected: selectedIngredients.length,
-        missingIngredients: [],
-        hasMoreMissing: false,
-        matchPercentage: 0
-      };
-    }
+  // Handle sort changes
+  const handleSortChange = (newSortBy: SortOption) => {
+    setSortBy(newSortBy);
   };
-
-  // Load more recipes when "See more" is clicked
-  const handleLoadMore = () => {
-    const nextPage = page + 1
-    const startIndex = (nextPage - 1) * RECIPES_PER_PAGE
-    const endIndex = startIndex + RECIPES_PER_PAGE
-    
-    // Add the next page of recipes to the displayed recipes
-    setDisplayedRecipes(prev => [...prev, ...recipes.slice(startIndex, endIndex)])
-    setPage(nextPage)
-    setHasMore(endIndex < recipes.length)
-  }
-
-  // Create a memoized sorted recipes array
-  const sortedRecipes = useMemo(() => {
-    return [...recipes].sort((a, b) => {
-      if (sortBy === 'name') {
-        return a.name.localeCompare(b.name);
-      } else if (sortBy === 'difficulty') {
-        type DifficultyLevel = 'Easy' | 'Medium' | 'Hard';
-        const difficultyOrder: Record<DifficultyLevel, number> = {
-          'Easy': 0,
-          'Medium': 1,
-          'Hard': 2
-        };
-        const aDifficulty = (a.difficulty || 'Easy') as DifficultyLevel;
-        const bDifficulty = (b.difficulty || 'Easy') as DifficultyLevel;
-        const aValue: number = difficultyOrder[aDifficulty];
-        const bValue: number = difficultyOrder[bDifficulty];
-        return aValue - bValue;
-      } else if (sortBy === 'cookTime') {
-        const parseTime = (time: string) => {
-          const minutes = parseInt(time.split(' ')[0]);
-          return isNaN(minutes) ? 0 : minutes;
-        };
-        return parseTime(a.cookTime) - parseTime(b.cookTime);
-      }
-      return 0;
-    });
-  }, [recipes, sortBy]);
 
   // Memoize the recipe list rendering
   const RecipeList = useMemo(() => {
@@ -650,7 +483,7 @@ const RecipeFinder = () => {
         )}
       </>
     );
-  }, [displayedRecipes, isLoading, handleRecipeClick, hasMore]);
+  }, [displayedRecipes, isLoading, handleRecipeClick, hasMore, handleLoadMore]);
 
   // Add debug info panel
   const debugInfo = useMemo(() => {

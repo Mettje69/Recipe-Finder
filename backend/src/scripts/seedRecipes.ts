@@ -136,7 +136,7 @@ const sampleRecipes = [
     difficulty: "Medium",
     servings: 6,
     category: "Chinese",
-    image: "https://images.unsplash.com/photo-1555126634-323283e090fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
 
   // Mexican Cuisine
@@ -228,7 +228,7 @@ const sampleRecipes = [
     difficulty: "Medium",
     servings: 4,
     category: "Mediterranean",
-    image: "https://images.unsplash.com/photo-1577805947697-89e18249d767?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1593001874117-c7c8c1f5c1c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Paella",
@@ -307,7 +307,7 @@ const sampleRecipes = [
     difficulty: "Medium",
     servings: 4,
     category: "Japanese",
-    image: "https://images.unsplash.com/photo-1617421753170-cc4b4c8c0c1e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1623341214825-9f4f963727da?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
 
   // Indian Cuisine
@@ -320,7 +320,7 @@ const sampleRecipes = [
     difficulty: "Medium",
     servings: 4,
     category: "Indian",
-    image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Vegetable Curry",
@@ -353,7 +353,7 @@ const sampleRecipes = [
     difficulty: "Medium",
     servings: 4,
     category: "Indian",
-    image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Samosa",
@@ -388,7 +388,7 @@ const sampleRecipes = [
     difficulty: "Easy",
     servings: 6,
     category: "American",
-    image: "https://images.unsplash.com/photo-1543339494-b4cd4e7ba6e5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1543339494-b4cd453f5a9e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Apple Pie",
