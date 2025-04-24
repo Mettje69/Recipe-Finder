@@ -306,7 +306,20 @@ const RecipeFinder = () => {
       if (showSuggestions && filteredIngredients.length > 0) {
         const selectedIngredient = filteredIngredients[highlightedIndex];
         if (selectedIngredient) {
-          handleIngredientClick(selectedIngredient);
+          // Check if the ingredient is already selected
+          const isSelected = selectedIngredients.some(
+            selected => selected.toLowerCase() === selectedIngredient.toLowerCase()
+          );
+          
+          if (isSelected) {
+            // If already selected, remove it
+            handleRemoveIngredient(selectedIngredient);
+          } else {
+            // If not selected, add it
+            handleIngredientClick(selectedIngredient);
+          }
+          setSearchTerm('');
+          setShowSuggestions(false);
         }
       }
     } else if (e.key === 'ArrowDown') {
