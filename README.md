@@ -20,7 +20,7 @@ A web application that helps you find recipes based on the ingredients you have 
 
 1. Clone the repository
 ```bash
-git install https://github.com/Mettje69/Recipe-Finder.git
+git clone https://github.com/Mettje69/Recipe-Finder.git
 ```
 3. Install dependencies in main folder:
 ```bash
