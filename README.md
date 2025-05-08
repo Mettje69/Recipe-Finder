@@ -36,6 +36,11 @@ npm install
 npm run dev
 ```
 
+4. Database
+```bash
+npx ts-node src/scripts/seedRecipes.ts
+```   
+
 4. Open your browser and navigate to `http://localhost:5173`
 
 ## Usage
