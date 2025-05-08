@@ -19,7 +19,10 @@ A web application that helps you find recipes based on the ingredients you have 
 ### Installation
 
 1. Clone the repository
-2. Install dependencies in main folder:
+```bash
+git install https://github.com/Mettje69/Recipe-Finder.git
+```
+3. Install dependencies in main folder:
 ```bash
 npm install
 ```
