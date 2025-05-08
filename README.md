@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Recipe Finder
 
 A web application that helps you find recipes based on the ingredients you have available.
@@ -20,12 +19,16 @@ A web application that helps you find recipes based on the ingredients you have 
 ### Installation
 
 1. Clone the repository
-2. Install dependencies:
+2. Install dependencies in main folder:
+```bash
+npm install
+```
+3. And install dependencies in backend
 ```bash
 npm install
 ```
 
-3. Start the development server:
+3. Start frontend and backend:
 ```bash
 npm run dev
 ```
