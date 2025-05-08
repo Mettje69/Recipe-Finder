@@ -41,7 +41,7 @@ npm run dev
 npx ts-node src/scripts/seedRecipes.ts
 ```   
 
-4. Open your browser and navigate to `http://localhost:5173`
+5. Open your browser and navigate to `http://localhost:5173`
 
 ## Usage
 
