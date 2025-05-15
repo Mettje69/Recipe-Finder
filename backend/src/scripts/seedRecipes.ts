@@ -30,7 +30,12 @@ const sampleRecipes = [
     name: "Spaghetti Carbonara",
     description: "Classic Italian pasta dish with eggs, cheese, pancetta, and black pepper",
     ingredients: ["Spaghetti", "Eggs", "Pecorino Romano", "Parmesan", "Pancetta", "Black Pepper", "Garlic", "Olive Oil"],
-    instructions: "1. Cook pasta in salted water\n2. Fry pancetta until crispy\n3. Mix eggs and cheese\n4. Combine all ingredients",
+    instructions: [
+      "Cook pasta in salted water until al dente",
+      "Fry pancetta until crispy and golden",
+      "Mix eggs and cheese in a bowl",
+      "Combine hot pasta with egg mixture and pancetta"
+    ],
     cookTime: "30",
     difficulty: "Medium",
     servings: 4,
@@ -41,7 +46,13 @@ const sampleRecipes = [
     name: "Margherita Pizza",
     description: "Traditional Neapolitan pizza with tomatoes, mozzarella, and basil",
     ingredients: ["Pizza Dough", "Tomato Sauce", "Mozzarella", "Fresh Basil", "Olive Oil", "Garlic", "Oregano"],
-    instructions: "1. Prepare dough\n2. Add toppings\n3. Bake at high heat\n4. Garnish with basil",
+    instructions: [
+      "Prepare and stretch the pizza dough",
+      "Spread tomato sauce evenly",
+      "Add fresh mozzarella slices",
+      "Bake at high heat until crust is golden",
+      "Garnish with fresh basil leaves"
+    ],
     cookTime: "25",
     difficulty: "Medium",
     servings: 4,
@@ -52,7 +63,12 @@ const sampleRecipes = [
     name: "Risotto alla Milanese",
     description: "Creamy Italian rice dish with saffron and parmesan",
     ingredients: ["Arborio Rice", "Saffron", "Parmesan", "Butter", "White Wine", "Onion", "Chicken Stock"],
-    instructions: "1. Toast rice\n2. Add wine\n3. Gradually add stock\n4. Finish with cheese",
+    instructions: [
+      "Toast rice with onions until translucent",
+      "Add white wine and let it absorb",
+      "Gradually add hot stock while stirring",
+      "Finish with butter and parmesan"
+    ],
     cookTime: "35",
     difficulty: "Medium",
     servings: 4,
@@ -63,7 +79,12 @@ const sampleRecipes = [
     name: "Pasta Primavera",
     description: "Fresh pasta dish with spring vegetables",
     ingredients: ["Pasta", "Broccoli", "Carrots", "Bell Peppers", "Zucchini", "Cherry Tomatoes", "Garlic", "Olive Oil", "Parmesan", "Fresh Basil"],
-    instructions: "1. Cook pasta\n2. Sauté vegetables\n3. Combine with sauce\n4. Top with cheese",
+    instructions: [
+      "Cook pasta until al dente",
+      "Sauté vegetables until crisp-tender",
+      "Combine pasta with vegetables and sauce",
+      "Top with freshly grated parmesan"
+    ],
     cookTime: "25",
     difficulty: "Easy",
     servings: 4,
@@ -74,7 +95,12 @@ const sampleRecipes = [
     name: "Osso Buco",
     description: "Classic Italian braised veal shanks",
     ingredients: ["Veal Shanks", "White Wine", "Chicken Stock", "Carrots", "Celery", "Onion", "Garlic", "Tomato Paste", "Gremolata"],
-    instructions: "1. Brown meat\n2. Cook vegetables\n3. Add liquid\n4. Braise until tender",
+    instructions: [
+      "Brown veal shanks on all sides",
+      "Sauté vegetables until softened",
+      "Add wine and stock to cover",
+      "Braise until meat is tender"
+    ],
     cookTime: "120",
     difficulty: "Hard",
     servings: 4,
@@ -87,7 +113,12 @@ const sampleRecipes = [
     name: "Chicken Stir Fry",
     description: "Quick and healthy Asian-style stir fry with vegetables",
     ingredients: ["Chicken Breast", "Broccoli", "Carrots", "Bell Peppers", "Soy Sauce", "Ginger", "Garlic", "Sesame Oil", "Rice"],
-    instructions: "1. Cut chicken into pieces\n2. Chop vegetables\n3. Stir fry chicken\n4. Add vegetables and sauce",
+    instructions: [
+      "Cut chicken into bite-sized pieces",
+      "Chop all vegetables into similar sizes",
+      "Stir fry chicken until cooked through",
+      "Add vegetables and sauce, cook until crisp-tender"
+    ],
     cookTime: "25",
     difficulty: "Easy",
     servings: 4,
@@ -98,7 +129,12 @@ const sampleRecipes = [
     name: "Pad Thai",
     description: "Classic Thai noodle dish with tamarind sauce",
     ingredients: ["Rice Noodles", "Shrimp", "Tofu", "Bean Sprouts", "Eggs", "Tamarind Sauce", "Fish Sauce", "Peanuts", "Lime"],
-    instructions: "1. Soak noodles\n2. Cook protein\n3. Add noodles and sauce\n4. Garnish with peanuts",
+    instructions: [
+      "Soak rice noodles in warm water",
+      "Cook protein of choice until done",
+      "Add noodles and sauce, stir fry together",
+      "Garnish with crushed peanuts and lime"
+    ],
     cookTime: "30",
     difficulty: "Medium",
     servings: 4,
@@ -109,7 +145,12 @@ const sampleRecipes = [
     name: "Korean Bibimbap",
     description: "Korean rice bowl with mixed vegetables and meat",
     ingredients: ["Rice", "Ground Beef", "Spinach", "Carrots", "Bean Sprouts", "Eggs", "Gochujang", "Sesame Oil", "Garlic"],
-    instructions: "1. Cook rice\n2. Prepare vegetables\n3. Cook meat\n4. Assemble bowl",
+    instructions: [
+      "Cook rice according to package instructions",
+      "Prepare and season all vegetables separately",
+      "Cook ground beef with seasonings",
+      "Assemble bowl with rice, vegetables, and meat"
+    ],
     cookTime: "40",
     difficulty: "Medium",
     servings: 4,
@@ -120,7 +161,12 @@ const sampleRecipes = [
     name: "Vietnamese Pho",
     description: "Traditional Vietnamese noodle soup",
     ingredients: ["Rice Noodles", "Beef", "Onion", "Ginger", "Star Anise", "Cinnamon", "Cardamom", "Bean Sprouts", "Thai Basil", "Lime"],
-    instructions: "1. Make broth\n2. Cook noodles\n3. Slice beef\n4. Assemble bowl",
+    instructions: [
+      "Make aromatic broth with spices",
+      "Cook rice noodles until tender",
+      "Slice beef very thinly",
+      "Assemble bowl with noodles, beef, and toppings"
+    ],
     cookTime: "90",
     difficulty: "Hard",
     servings: 4,
@@ -131,7 +177,12 @@ const sampleRecipes = [
     name: "Chinese Dumplings",
     description: "Homemade pork and vegetable dumplings",
     ingredients: ["Dumpling Wrappers", "Ground Pork", "Cabbage", "Ginger", "Garlic", "Soy Sauce", "Sesame Oil", "Green Onions"],
-    instructions: "1. Make filling\n2. Wrap dumplings\n3. Steam or fry\n4. Serve with sauce",
+    instructions: [
+      "Mix filling ingredients thoroughly",
+      "Fill and fold dumpling wrappers",
+      "Steam or pan-fry until cooked",
+      "Serve with dipping sauce"
+    ],
     cookTime: "60",
     difficulty: "Medium",
     servings: 6,
@@ -144,7 +195,12 @@ const sampleRecipes = [
     name: "Beef Tacos",
     description: "Mexican-style beef tacos with fresh toppings",
     ingredients: ["Ground Beef", "Taco Seasoning", "Tortillas", "Lettuce", "Tomatoes", "Onions", "Cilantro", "Lime", "Sour Cream", "Cheese"],
-    instructions: "1. Brown beef\n2. Add seasoning\n3. Warm tortillas\n4. Assemble tacos",
+    instructions: [
+      "Brown ground beef in a skillet",
+      "Add taco seasoning and water, simmer",
+      "Warm tortillas in a dry pan",
+      "Assemble tacos with meat and toppings"
+    ],
     cookTime: "25",
     difficulty: "Easy",
     servings: 4,
@@ -155,7 +211,12 @@ const sampleRecipes = [
     name: "Enchiladas",
     description: "Corn tortillas filled with meat and cheese, topped with sauce",
     ingredients: ["Corn Tortillas", "Chicken", "Cheese", "Enchilada Sauce", "Onion", "Garlic", "Cumin", "Chili Powder"],
-    instructions: "1. Cook filling\n2. Roll enchiladas\n3. Add sauce\n4. Bake until bubbly",
+    instructions: [
+      "Cook and shred chicken with seasonings",
+      "Dip tortillas in sauce and fill with chicken",
+      "Roll up and place in baking dish",
+      "Top with sauce and cheese, bake until bubbly"
+    ],
     cookTime: "45",
     difficulty: "Medium",
     servings: 6,
@@ -166,7 +227,12 @@ const sampleRecipes = [
     name: "Guacamole",
     description: "Fresh avocado dip with lime and cilantro",
     ingredients: ["Avocado", "Lime", "Cilantro", "Onion", "Tomato", "Garlic", "Salt", "Cayenne"],
-    instructions: "1. Mash avocados\n2. Mix ingredients\n3. Season to taste\n4. Chill before serving",
+    instructions: [
+      "Mash ripe avocados in a bowl",
+      "Mix in chopped vegetables and herbs",
+      "Season with lime juice and spices",
+      "Chill for 30 minutes before serving"
+    ],
     cookTime: "15",
     difficulty: "Easy",
     servings: 4,
@@ -177,7 +243,12 @@ const sampleRecipes = [
     name: "Chiles en Nogada",
     description: "Stuffed poblano peppers with walnut sauce",
     ingredients: ["Poblano Peppers", "Ground Pork", "Apple", "Pear", "Raisins", "Walnuts", "Cream", "Pomegranate Seeds", "Parsley"],
-    instructions: "1. Roast peppers\n2. Make filling\n3. Stuff peppers\n4. Add sauce",
+    instructions: [
+      "Roast and peel poblano peppers",
+      "Prepare meat and fruit filling",
+      "Stuff peppers and cover with walnut sauce",
+      "Garnish with pomegranate seeds and parsley"
+    ],
     cookTime: "75",
     difficulty: "Hard",
     servings: 6,
@@ -188,7 +259,12 @@ const sampleRecipes = [
     name: "Pozole",
     description: "Traditional Mexican hominy soup",
     ingredients: ["Pork", "Hominy", "Dried Chiles", "Garlic", "Onion", "Cabbage", "Radishes", "Lime", "Oregano"],
-    instructions: "1. Cook meat\n2. Make broth\n3. Add hominy\n4. Garnish with toppings",
+    instructions: [
+      "Cook pork until tender in seasoned broth",
+      "Add hominy and continue cooking",
+      "Prepare fresh toppings and garnishes",
+      "Serve hot with lime and toppings"
+    ],
     cookTime: "120",
     difficulty: "Medium",
     servings: 8,
@@ -201,7 +277,12 @@ const sampleRecipes = [
     name: "Greek Salad",
     description: "Fresh and healthy Greek salad with feta cheese",
     ingredients: ["Cucumber", "Tomatoes", "Red Onion", "Olives", "Feta", "Olive Oil", "Oregano", "Lettuce"],
-    instructions: "1. Chop vegetables\n2. Combine ingredients\n3. Dress with olive oil\n4. Add feta and oregano",
+    instructions: [
+      "Chop vegetables into similar sizes",
+      "Combine all ingredients in a large bowl",
+      "Dress with olive oil and oregano",
+      "Top with crumbled feta cheese"
+    ],
     cookTime: "15",
     difficulty: "Easy",
     servings: 4,
@@ -212,7 +293,12 @@ const sampleRecipes = [
     name: "Hummus",
     description: "Creamy chickpea dip with tahini and garlic",
     ingredients: ["Chickpeas", "Tahini", "Garlic", "Lemon", "Olive Oil", "Cumin", "Salt", "Paprika"],
-    instructions: "1. Blend chickpeas\n2. Add tahini\n3. Season to taste\n4. Garnish with oil",
+    instructions: [
+      "Process chickpeas until smooth",
+      "Add tahini and seasonings",
+      "Blend in olive oil and lemon juice",
+      "Garnish with paprika and olive oil"
+    ],
     cookTime: "15",
     difficulty: "Easy",
     servings: 4,
@@ -223,7 +309,12 @@ const sampleRecipes = [
     name: "Falafel",
     description: "Crispy chickpea patties with herbs and spices",
     ingredients: ["Chickpeas", "Parsley", "Cilantro", "Onion", "Garlic", "Cumin", "Coriander", "Baking Soda"],
-    instructions: "1. Process ingredients\n2. Form patties\n3. Fry until golden\n4. Serve with sauce",
+    instructions: [
+      "Process all ingredients until well combined",
+      "Form mixture into small patties",
+      "Fry until golden and crispy",
+      "Serve with tahini sauce"
+    ],
     cookTime: "30",
     difficulty: "Medium",
     servings: 4,
@@ -234,7 +325,12 @@ const sampleRecipes = [
     name: "Paella",
     description: "Spanish rice dish with seafood",
     ingredients: ["Rice", "Shrimp", "Mussels", "Chicken", "Bell Peppers", "Tomatoes", "Saffron", "Olive Oil", "Garlic", "Onion"],
-    instructions: "1. Cook meat\n2. Add rice\n3. Add seafood\n4. Cook until done",
+    instructions: [
+      "Cook chicken and vegetables in paella pan",
+      "Add rice and saffron-infused stock",
+      "Add seafood when rice is almost done",
+      "Cook until rice is tender and socarrat forms"
+    ],
     cookTime: "45",
     difficulty: "Medium",
     servings: 6,
@@ -245,7 +341,12 @@ const sampleRecipes = [
     name: "Moussaka",
     description: "Greek eggplant casserole",
     ingredients: ["Eggplant", "Ground Lamb", "Onion", "Garlic", "Tomato Sauce", "Cinnamon", "Bechamel Sauce", "Parmesan"],
-    instructions: "1. Fry eggplant\n2. Cook meat\n3. Make sauce\n4. Layer and bake",
+    instructions: [
+      "Fry eggplant slices until golden",
+      "Prepare spiced meat sauce",
+      "Make bechamel sauce",
+      "Layer ingredients and bake until bubbly"
+    ],
     cookTime: "90",
     difficulty: "Hard",
     servings: 8,
@@ -256,134 +357,194 @@ const sampleRecipes = [
   // Japanese Cuisine
   {
     name: "Sushi Roll",
-    description: "Homemade California roll with crab and avocado",
-    ingredients: ["Sushi Rice", "Nori", "Crab Meat", "Avocado", "Cucumber", "Sesame Seeds", "Soy Sauce", "Wasabi"],
-    instructions: "1. Cook sushi rice\n2. Prepare fillings\n3. Roll sushi\n4. Cut and serve",
+    description: "Fresh salmon and avocado roll",
+    ingredients: ["Sushi Rice", "Nori", "Salmon", "Avocado", "Cucumber", "Wasabi", "Soy Sauce", "Rice Vinegar"],
+    instructions: [
+      "Prepare sushi rice with vinegar",
+      "Place nori on bamboo mat",
+      "Add rice and fillings",
+      "Roll tightly and slice"
+    ],
     cookTime: "45",
-    difficulty: "Hard",
+    difficulty: "Medium",
     servings: 4,
     category: "Japanese",
     image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Miso Soup",
-    description: "Traditional Japanese soup with tofu and seaweed",
-    ingredients: ["Dashi", "Miso Paste", "Tofu", "Seaweed", "Green Onions", "Wakame"],
-    instructions: "1. Make dashi\n2. Add miso\n3. Add tofu\n4. Garnish with seaweed",
+    description: "Traditional Japanese soup with tofu",
+    ingredients: ["Miso Paste", "Dashi", "Tofu", "Green Onions", "Seaweed"],
+    instructions: [
+      "Prepare dashi stock",
+      "Add miso paste and dissolve",
+      "Add tofu and seaweed",
+      "Garnish with green onions"
+    ],
     cookTime: "20",
     difficulty: "Easy",
     servings: 4,
     category: "Japanese",
-    image: "https://images.unsplash.com/photo-1548943487-a2e4e43b4853?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Tempura",
-    description: "Crispy Japanese battered vegetables and seafood",
+    description: "Crispy battered vegetables and seafood",
     ingredients: ["Shrimp", "Vegetables", "Flour", "Egg", "Ice Water", "Oil", "Tempura Sauce"],
-    instructions: "1. Make batter\n2. Coat ingredients\n3. Deep fry\n4. Serve with sauce",
+    instructions: [
+      "Prepare ice-cold batter",
+      "Coat ingredients in batter",
+      "Fry until golden and crispy",
+      "Serve with tempura sauce"
+    ],
     cookTime: "30",
     difficulty: "Medium",
     servings: 4,
     category: "Japanese",
-    image: "https://images.unsplash.com/photo-1617421753170-cc4b4c8c0c1e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Ramen",
-    description: "Japanese noodle soup with toppings",
-    ingredients: ["Ramen Noodles", "Pork Belly", "Eggs", "Seaweed", "Green Onions", "Bamboo Shoots", "Corn", "Nori", "Soy Sauce"],
-    instructions: "1. Make broth\n2. Cook noodles\n3. Prepare toppings\n4. Assemble bowl",
+    description: "Japanese noodle soup with rich broth",
+    ingredients: ["Ramen Noodles", "Pork", "Egg", "Green Onions", "Corn", "Seaweed", "Ramen Broth"],
+    instructions: [
+      "Prepare ramen broth",
+      "Cook noodles separately",
+      "Add toppings to bowl",
+      "Pour hot broth over noodles"
+    ],
     cookTime: "60",
-    difficulty: "Hard",
+    difficulty: "Medium",
     servings: 4,
     category: "Japanese",
-    image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Okonomiyaki",
     description: "Japanese savory pancake",
-    ingredients: ["Cabbage", "Flour", "Eggs", "Pork Belly", "Green Onions", "Okonomiyaki Sauce", "Mayo", "Bonito Flakes"],
-    instructions: "1. Mix batter\n2. Add fillings\n3. Cook pancake\n4. Add toppings",
+    ingredients: ["Cabbage", "Flour", "Egg", "Pork", "Green Onions", "Okonomiyaki Sauce", "Mayonnaise", "Bonito Flakes"],
+    instructions: [
+      "Mix batter with shredded cabbage",
+      "Cook pancake on griddle",
+      "Add toppings and flip",
+      "Drizzle with sauce and garnish"
+    ],
     cookTime: "30",
     difficulty: "Medium",
     servings: 4,
     category: "Japanese",
-    image: "https://images.unsplash.com/photo-1623341214825-9f4f963727da?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
 
   // Indian Cuisine
   {
     name: "Butter Chicken",
-    description: "Creamy Indian curry with tender chicken",
-    ingredients: ["Chicken", "Yogurt", "Tomato Sauce", "Cream", "Garam Masala", "Ginger", "Garlic", "Rice"],
-    instructions: "1. Marinate chicken\n2. Cook sauce\n3. Add chicken\n4. Finish with cream",
-    cookTime: "45",
-    difficulty: "Medium",
-    servings: 4,
-    category: "Indian",
-    image: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    name: "Vegetable Curry",
-    description: "Spicy vegetable curry with coconut milk",
-    ingredients: ["Mixed Vegetables", "Coconut Milk", "Curry Powder", "Ginger", "Garlic", "Onion", "Rice"],
-    instructions: "1. Cook vegetables\n2. Make sauce\n3. Combine\n4. Simmer until tender",
-    cookTime: "35",
-    difficulty: "Easy",
-    servings: 4,
-    category: "Indian",
-    image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    name: "Naan Bread",
-    description: "Soft Indian flatbread",
-    ingredients: ["Flour", "Yogurt", "Yeast", "Sugar", "Salt", "Butter", "Garlic"],
-    instructions: "1. Make dough\n2. Rest dough\n3. Shape and cook\n4. Brush with butter",
-    cookTime: "30",
-    difficulty: "Medium",
-    servings: 4,
-    category: "Indian",
-    image: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    name: "Tikka Masala",
-    description: "Creamy Indian curry with chicken",
-    ingredients: ["Chicken", "Yogurt", "Garam Masala", "Ginger", "Garlic", "Tomato Sauce", "Cream", "Rice", "Naan"],
-    instructions: "1. Marinate chicken\n2. Cook sauce\n3. Add chicken\n4. Finish with cream",
+    description: "Creamy tomato-based curry with tender chicken",
+    ingredients: ["Chicken", "Tomatoes", "Butter", "Cream", "Garam Masala", "Ginger", "Garlic", "Yogurt"],
+    instructions: [
+      "Marinate chicken in spiced yogurt",
+      "Cook chicken until tender",
+      "Prepare tomato-based sauce",
+      "Combine and finish with cream"
+    ],
     cookTime: "60",
     difficulty: "Medium",
     servings: 4,
     category: "Indian",
-    image: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    name: "Vegetable Curry",
+    description: "Spiced vegetable medley in curry sauce",
+    ingredients: ["Mixed Vegetables", "Onion", "Tomatoes", "Coconut Milk", "Curry Powder", "Turmeric", "Cumin", "Coriander"],
+    instructions: [
+      "Sauté onions and spices",
+      "Add vegetables and cook",
+      "Simmer in coconut milk",
+      "Garnish with fresh herbs"
+    ],
+    cookTime: "40",
+    difficulty: "Easy",
+    servings: 4,
+    category: "Indian",
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    name: "Naan Bread",
+    description: "Soft and fluffy Indian flatbread",
+    ingredients: ["Flour", "Yogurt", "Yeast", "Sugar", "Salt", "Butter", "Garlic"],
+    instructions: [
+      "Prepare and proof yeast dough",
+      "Divide and shape into rounds",
+      "Cook on hot griddle",
+      "Brush with garlic butter"
+    ],
+    cookTime: "30",
+    difficulty: "Medium",
+    servings: 6,
+    category: "Indian",
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    name: "Tikka Masala",
+    description: "Grilled chicken in spiced tomato sauce",
+    ingredients: ["Chicken", "Yogurt", "Tomatoes", "Cream", "Garam Masala", "Paprika", "Ginger", "Garlic"],
+    instructions: [
+      "Marinate chicken in spiced yogurt",
+      "Grill chicken pieces",
+      "Prepare rich tomato sauce",
+      "Combine and finish with cream"
+    ],
+    cookTime: "50",
+    difficulty: "Medium",
+    servings: 4,
+    category: "Indian",
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Samosa",
     description: "Crispy pastry filled with spiced potatoes",
-    ingredients: ["Flour", "Potatoes", "Peas", "Onion", "Ginger", "Garlic", "Spices", "Oil", "Mint Chutney"],
-    instructions: "1. Make dough\n2. Prepare filling\n3. Shape samosas\n4. Deep fry",
+    ingredients: ["Flour", "Potatoes", "Peas", "Spices", "Oil", "Onion", "Ginger", "Cilantro"],
+    instructions: [
+      "Prepare spiced potato filling",
+      "Make and roll pastry",
+      "Fill and shape samosas",
+      "Fry until golden and crispy"
+    ],
     cookTime: "45",
     difficulty: "Medium",
     servings: 6,
     category: "Indian",
-    image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
 
   // American Cuisine
   {
     name: "Classic Burger",
-    description: "Juicy beef burger with fresh toppings",
-    ingredients: ["Ground Beef", "Burger Buns", "Lettuce", "Tomato", "Onion", "Cheese", "Pickles", "Mayo"],
-    instructions: "1. Form patties\n2. Cook burgers\n3. Add cheese\n4. Assemble with toppings",
+    description: "Juicy beef patty with fresh toppings",
+    ingredients: ["Ground Beef", "Buns", "Lettuce", "Tomato", "Onion", "Cheese", "Pickles", "Ketchup", "Mustard"],
+    instructions: [
+      "Form beef into patties",
+      "Season and grill to desired doneness",
+      "Toast buns and melt cheese",
+      "Assemble with fresh toppings"
+    ],
     cookTime: "25",
     difficulty: "Easy",
     servings: 4,
     category: "American",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Mac and Cheese",
-    description: "Creamy pasta with melted cheese",
-    ingredients: ["Macaroni", "Cheddar", "Milk", "Butter", "Flour", "Salt", "Pepper", "Breadcrumbs"],
-    instructions: "1. Cook pasta\n2. Make cheese sauce\n3. Combine\n4. Top and bake",
+    description: "Creamy pasta with cheese sauce",
+    ingredients: ["Macaroni", "Cheddar", "Milk", "Butter", "Flour", "Breadcrumbs", "Salt", "Pepper"],
+    instructions: [
+      "Cook pasta until al dente",
+      "Make cheese sauce with roux",
+      "Combine pasta and sauce",
+      "Top with breadcrumbs and bake"
+    ],
     cookTime: "35",
     difficulty: "Easy",
     servings: 6,
@@ -395,10 +556,10 @@ const sampleRecipes = [
     description: "Classic American apple pie with cinnamon",
     ingredients: ["Apples", "Pie Crust", "Sugar", "Cinnamon", "Butter", "Flour", "Lemon", "Egg"],
     instructions: [
-      "Prepare filling",
-      "Roll crust",
-      "Assemble pie",
-      "Bake until golden"
+      "Prepare spiced apple filling",
+      "Roll out pie crust",
+      "Assemble pie with filling",
+      "Bake until golden and bubbling"
     ],
     cookTime: "60",
     difficulty: "Medium",
@@ -411,10 +572,10 @@ const sampleRecipes = [
     description: "Slow-cooked barbecue ribs",
     ingredients: ["Pork Ribs", "BBQ Sauce", "Brown Sugar", "Garlic Powder", "Onion Powder", "Paprika", "Salt", "Pepper"],
     instructions: [
-      "Season ribs",
-      "Slow cook",
-      "Add sauce",
-      "Grill until done"
+      "Season ribs with dry rub",
+      "Slow cook until tender",
+      "Add BBQ sauce",
+      "Grill until sauce is caramelized"
     ],
     cookTime: "180",
     difficulty: "Hard",
@@ -427,10 +588,10 @@ const sampleRecipes = [
     description: "Creamy New England clam chowder",
     ingredients: ["Clams", "Potatoes", "Onion", "Celery", "Bacon", "Cream", "Butter", "Flour", "Thyme"],
     instructions: [
-      "Cook bacon",
-      "Make base",
-      "Add clams",
-      "Finish with cream"
+      "Cook bacon until crispy",
+      "Make base with vegetables and flour",
+      "Add clams and their juice",
+      "Finish with cream and seasonings"
     ],
     cookTime: "45",
     difficulty: "Medium",
@@ -608,122 +769,88 @@ const sampleRecipes = [
   // Real Recipes from Reputable Sources
   {
     name: "Classic Margherita Pizza",
-    description: "Authentic Neapolitan-style pizza with fresh ingredients",
-    ingredients: [
-      "00 flour",
-      "Active dry yeast",
-      "Warm water",
-      "Sea salt",
-      "San Marzano tomatoes",
-      "Fresh mozzarella",
-      "Fresh basil",
-      "Extra virgin olive oil"
+    description: "Traditional Neapolitan pizza with fresh ingredients",
+    ingredients: ["Pizza Dough", "San Marzano Tomatoes", "Fresh Mozzarella", "Fresh Basil", "Olive Oil", "Salt"],
+    instructions: [
+      "Stretch dough into a thin round",
+      "Top with crushed tomatoes",
+      "Add torn mozzarella pieces",
+      "Bake at high heat until crust is charred",
+      "Finish with fresh basil and olive oil"
     ],
-    instructions: "1. Make the dough and let it rise\n2. Prepare the sauce\n3. Shape the pizza\n4. Bake at high heat\n5. Add fresh toppings",
-    cookTime: "90",
+    cookTime: "20",
     difficulty: "Medium",
-    servings: 4,
+    servings: 2,
     category: "Italian",
-    image: "https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    source: "https://www.seriouseats.com/classic-margherita-pizza-recipe"
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Authentic Pad Thai",
-    description: "Traditional Thai street food with tamarind sauce",
-    ingredients: [
-      "Rice noodles",
-      "Firm tofu",
-      "Shrimp",
-      "Bean sprouts",
-      "Eggs",
-      "Tamarind paste",
-      "Fish sauce",
-      "Palm sugar",
-      "Garlic",
-      "Dried shrimp",
-      "Crushed peanuts",
-      "Lime wedges"
+    description: "Classic Thai stir-fried rice noodles",
+    ingredients: ["Rice Noodles", "Tofu", "Shrimp", "Bean Sprouts", "Peanuts", "Tamarind Paste", "Fish Sauce", "Palm Sugar"],
+    instructions: [
+      "Soak noodles until pliable",
+      "Stir-fry tofu and shrimp",
+      "Add noodles and sauce",
+      "Toss with bean sprouts and peanuts",
+      "Serve with lime wedges"
     ],
-    instructions: "1. Soak noodles\n2. Prepare sauce\n3. Cook protein\n4. Stir fry everything together\n5. Garnish with peanuts and lime",
     cookTime: "30",
     difficulty: "Medium",
     servings: 4,
     category: "Thai",
-    image: "https://images.unsplash.com/photo-1546793665-c74683f339c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    source: "https://www.recipetineats.com/pad-thai/"
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Traditional Ramen",
-    description: "Japanese noodle soup with rich broth",
-    ingredients: [
-      "Pork bones",
-      "Chicken bones",
-      "Kombu",
-      "Dried shiitake mushrooms",
-      "Ginger",
-      "Garlic",
-      "Green onions",
-      "Ramen noodles",
-      "Chashu pork",
-      "Soft-boiled eggs",
-      "Nori",
-      "Bamboo shoots"
+    description: "Japanese noodle soup with rich pork broth",
+    ingredients: ["Ramen Noodles", "Pork Bones", "Soy Sauce", "Mirin", "Chashu Pork", "Soft-boiled Eggs", "Nori", "Green Onions"],
+    instructions: [
+      "Simmer pork bones for rich broth",
+      "Prepare toppings and eggs",
+      "Cook noodles separately",
+      "Assemble bowls with hot broth",
+      "Add toppings and serve"
     ],
-    instructions: "1. Make the broth\n2. Prepare toppings\n3. Cook noodles\n4. Assemble bowl\n5. Add garnishes",
-    cookTime: "180",
+    cookTime: "480",
     difficulty: "Hard",
-    servings: 4,
+    servings: 6,
     category: "Japanese",
-    image: "https://images.unsplash.com/photo-1546793665-c74683f339c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    source: "https://www.justonecookbook.com/homemade-shoyu-ramen/"
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Authentic Tacos al Pastor",
-    description: "Mexican street tacos with marinated pork",
-    ingredients: [
-      "Pork shoulder",
-      "Achiote paste",
-      "Pineapple",
-      "White onion",
-      "Cilantro",
-      "Corn tortillas",
-      "Lime wedges",
-      "Guajillo chiles",
-      "Garlic",
-      "Cumin",
-      "Oregano",
-      "Vinegar"
+    description: "Mexican street-style marinated pork tacos",
+    ingredients: ["Pork Shoulder", "Achiote Paste", "Pineapple", "Corn Tortillas", "Onion", "Cilantro", "Lime", "Chiles"],
+    instructions: [
+      "Marinate pork with achiote and spices",
+      "Stack and roast on vertical spit",
+      "Slice meat directly onto tortillas",
+      "Top with pineapple and onion",
+      "Serve with lime and salsa"
     ],
-    instructions: "1. Make marinade\n2. Marinate pork\n3. Cook on vertical spit\n4. Warm tortillas\n5. Assemble tacos",
-    cookTime: "120",
+    cookTime: "240",
     difficulty: "Hard",
-    servings: 6,
+    servings: 8,
     category: "Mexican",
-    image: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    source: "https://www.seriouseats.com/tacos-al-pastor-recipe"
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Classic French Onion Soup",
-    description: "Traditional French soup with caramelized onions",
-    ingredients: [
-      "Yellow onions",
-      "Butter",
-      "Beef broth",
-      "White wine",
-      "Thyme",
-      "Bay leaves",
-      "Baguette",
-      "Gruyere cheese",
-      "Salt",
-      "Black pepper"
+    description: "Rich beef broth with caramelized onions and cheese",
+    ingredients: ["Onions", "Beef Stock", "Butter", "Baguette", "Gruyere Cheese", "White Wine", "Thyme", "Bay Leaves"],
+    instructions: [
+      "Slowly caramelize onions",
+      "Deglaze with wine",
+      "Add stock and simmer",
+      "Top with bread and cheese",
+      "Broil until golden and bubbly"
     ],
-    instructions: "1. Caramelize onions\n2. Make broth\n3. Toast bread\n4. Assemble soup\n5. Broil with cheese",
     cookTime: "90",
     difficulty: "Medium",
-    servings: 4,
+    servings: 6,
     category: "French",
-    image: "https://images.unsplash.com/photo-1548943487-a2e4e43b4853?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    source: "https://www.foodnetwork.com/recipes/tyler-florence/french-onion-soup-recipe-1945049"
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Authentic Butter Chicken",
@@ -743,7 +870,13 @@ const sampleRecipes = [
       "Rice",
       "Naan"
     ],
-    instructions: "1. Marinate chicken\n2. Cook sauce\n3. Add chicken\n4. Finish with cream\n5. Serve with rice and naan",
+    instructions: [
+      "Marinate chicken in yogurt and spices for 4 hours",
+      "Prepare tomato-based sauce with aromatics",
+      "Add cooked chicken to sauce",
+      "Finish with cream and butter",
+      "Serve with rice and naan bread"
+    ],
     cookTime: "60",
     difficulty: "Medium",
     servings: 4,
@@ -769,7 +902,13 @@ const sampleRecipes = [
       "Chicken stock",
       "Lemon wedges"
     ],
-    instructions: "1. Prepare ingredients\n2. Make sofrito\n3. Cook rice\n4. Add seafood\n5. Let socarrat form",
+    instructions: [
+      "Prepare sofrito with vegetables and spices",
+      "Add rice and saffron-infused stock",
+      "Cook without stirring until rice is almost done",
+      "Add seafood and continue cooking",
+      "Let socarrat form on bottom before serving"
+    ],
     cookTime: "45",
     difficulty: "Hard",
     servings: 6,
@@ -792,7 +931,13 @@ const sampleRecipes = [
       "Lemon juice",
       "Salt"
     ],
-    instructions: "1. Make crust\n2. Prepare filling\n3. Bake in water bath\n4. Cool slowly\n5. Chill overnight",
+    instructions: [
+      "Make graham cracker crust and press into pan",
+      "Prepare cream cheese filling with eggs and sugar",
+      "Bake in water bath until set",
+      "Cool slowly in oven",
+      "Chill overnight before serving"
+    ],
     cookTime: "90",
     difficulty: "Medium",
     servings: 12,

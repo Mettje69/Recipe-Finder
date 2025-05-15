@@ -143,13 +143,29 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
             <GridItem gridColumn={{ base: '1', md: '1 / -1' }}>
               <Box>
                 <Text fontWeight="bold" mb={2}>Instructions:</Text>
-                <List spacing={3}>
+                <Box as="ol" pl={5} style={{ listStyleType: 'decimal', paddingLeft: 0, textIndent: 0, marginLeft: '1.5em' }}>
                   {recipe.instructions.map((instruction, index) => (
-                    <ListItem key={index}>
-                      <Text>{instruction}</Text>
-                    </ListItem>
+                    <Box
+                      as="li"
+                      key={index}
+                      mb={2}
+                      fontWeight="normal"
+                      color="inherit"
+                      fontSize="1.1em"
+                      sx={{
+                        '&::marker': {
+                          fontWeight: 'bold',
+                          color: '#ED8936',
+                          fontSize: '1.1em',
+                          marginRight: '0.5em',
+                        }
+                      }}
+                      style={{ paddingLeft: '0.5em' }}
+                    >
+                      {instruction}
+                    </Box>
                   ))}
-                </List>
+                </Box>
               </Box>
             </GridItem>
           </Grid>
