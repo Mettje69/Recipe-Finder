@@ -27,13 +27,27 @@ const Header = () => {
   const navigate = useNavigate()
 
   const handleLogin = () => {
-    navigate('/login')
-    window.location.reload()
+    window.location.href = '/login'
   }
 
   const handleRegister = () => {
-    navigate('/register')
-    window.location.reload()
+    window.location.href = '/register'
+  }
+
+  const handleAddRecipe = () => {
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    
+    if (storedToken && storedUser && isAuthenticated) {
+      window.location.href = '/add';
+    } else {
+      window.location.href = '/login';
+    }
+  }
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   }
 
   return (
@@ -103,17 +117,16 @@ const Header = () => {
             {isAuthenticated ? (
               <>
                 <Button
-                  as={RouterLink}
-                  to="/add"
-                  leftIcon={<AddIcon />}
                   colorScheme="orange"
                   size="md"
                   borderRadius="full"
+                  leftIcon={<AddIcon />}
                   _hover={{
                     transform: 'translateY(-2px)',
                     boxShadow: 'md'
                   }}
                   transition="all 0.2s ease-in-out"
+                  onClick={handleAddRecipe}
                 >
                   Add Recipe
                 </Button>
@@ -130,7 +143,7 @@ const Header = () => {
                   </MenuButton>
                   <Portal>
                     <MenuList zIndex={2000} position="relative">
-                      <MenuItem onClick={logout}>Logout</MenuItem>
+                      <MenuItem onClick={handleLogout}>Logout</MenuItem>
                     </MenuList>
                   </Portal>
                 </Menu>

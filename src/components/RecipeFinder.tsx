@@ -220,12 +220,20 @@ const RecipeFinder = () => {
   const filteredIngredients = useMemo(() => {
     if (!searchTerm.trim()) return [];
     const searchTermLower = searchTerm.toLowerCase();
-    return allIngredients
+    
+    // First, get all unique ingredients from all recipes
+    const allRecipeIngredients = Array.from(new Set(
+      recipes.flatMap(recipe => recipe.ingredients)
+    ));
+
+    // Then filter based on search term
+    return allRecipeIngredients
       .filter(ingredient => 
-        ingredient.toLowerCase().includes(searchTermLower)
+        ingredient.toLowerCase().includes(searchTermLower) &&
+        !selectedIngredients.includes(ingredient)
       )
-      .slice(0, 10);
-  }, [allIngredients, searchTerm]);
+      .slice(0, 10); // Limit to 10 suggestions
+  }, [recipes, searchTerm, selectedIngredients]);
 
   // Memoize the filtered and sorted recipes
   const filteredAndSortedRecipes = useMemo(() => {
@@ -234,14 +242,14 @@ const RecipeFinder = () => {
 
     // Apply ingredient filtering
     if (selectedIngredients.length > 0) {
-      const ingredientsLower = selectedIngredients.map(i => i.toLowerCase());
-      filteredRecipes = filteredRecipes.filter(recipe => {
-        return ingredientsLower.some(selectedIngredient => 
+      // Get recipes that match ANY of the selected ingredients
+      filteredRecipes = recipes.filter(recipe => 
+        selectedIngredients.some(selectedIngredient => 
           recipe.ingredients.some(recipeIngredient => 
-            recipeIngredient.toLowerCase().includes(selectedIngredient)
+            recipeIngredient.toLowerCase().includes(selectedIngredient.toLowerCase())
           )
-        );
-      });
+        )
+      );
     }
 
     // Apply filters

@@ -1,32 +1,107 @@
 import express from 'express';
+import multer from 'multer';
+import path from 'path';
 import Recipe from '../models/Recipe';
+import { auth } from '../middleware/auth';
 
 const router = express.Router();
+
+// Configure multer for image upload
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
+    }
+    cb(new Error('Only image files are allowed!'));
+  }
+});
+
+// Create a new recipe
+router.post('/', auth, upload.single('image'), async (req, res) => {
+  try {
+    const { 
+      name, 
+      description, 
+      ingredients, 
+      instructions,
+      cookTime,
+      difficulty,
+      servings,
+      category
+    } = req.body;
+    
+    // Parse and clean ingredients
+    const parsedIngredients = JSON.parse(ingredients).map((ing: string) => 
+      ing.trim().toLowerCase()
+    );
+
+    // Parse and clean instructions
+    const parsedInstructions = JSON.parse(instructions).map((inst: string) => 
+      inst.trim()
+    );
+
+    const recipe = new Recipe({
+      name: name.trim(),
+      description: description.trim(),
+      ingredients: parsedIngredients,
+      instructions: parsedInstructions,
+      cookTime: parseInt(cookTime),
+      difficulty,
+      servings: parseInt(servings),
+      category: category.trim(),
+      image: req.file ? `/uploads/${req.file.filename}` : '',
+      author: req.user._id
+    });
+
+    await recipe.save();
+    res.status(201).json(recipe);
+  } catch (error) {
+    console.error('Error creating recipe:', error);
+    res.status(500).json({ error: 'Failed to create recipe' });
+  }
+});
 
 // Get all recipes
 router.get('/', async (req, res) => {
   try {
-    console.log('Backend: GET /api/recipes - Fetching all recipes from database');
-    const recipes = await Recipe.find();
-    console.log('Backend: Number of recipes:', recipes.length);
+    const recipes = await Recipe.find()
+      .populate('author', 'username')
+      .sort({ createdAt: -1 });
     res.json(recipes);
   } catch (error) {
     console.error('Error fetching recipes:', error);
-    res.status(500).json({ message: 'Error fetching recipes' });
+    res.status(500).json({ error: 'Failed to fetch recipes' });
   }
 });
 
-// Get recipe by ID
+// Get a single recipe
 router.get('/:id', async (req, res) => {
   try {
-    const recipe = await Recipe.findById(req.params.id);
+    const recipe = await Recipe.findById(req.params.id)
+      .populate('author', 'username');
     if (!recipe) {
-      return res.status(404).json({ message: 'Recipe not found' });
+      return res.status(404).json({ error: 'Recipe not found' });
     }
     res.json(recipe);
   } catch (error) {
     console.error('Error fetching recipe:', error);
-    res.status(500).json({ message: 'Error fetching recipe' });
+    res.status(500).json({ error: 'Failed to fetch recipe' });
   }
 });
 
@@ -63,15 +138,26 @@ router.post('/search', async (req, res) => {
   }
 });
 
-// Create new recipe
-router.post('/', async (req, res) => {
+// Search recipes
+router.get('/search', async (req, res) => {
   try {
-    const recipe = new Recipe(req.body);
-    await recipe.save();
-    res.status(201).json(recipe);
+    const query = req.query.query as string;
+    
+    if (!query) {
+      return res.json([]);
+    }
+
+    const recipes = await Recipe.find(
+      { $text: { $search: query } },
+      { score: { $meta: "textScore" } }
+    )
+    .sort({ score: { $meta: "textScore" } })
+    .populate('author', 'username');
+
+    res.json(recipes);
   } catch (error) {
-    console.error('Error creating recipe:', error);
-    res.status(500).json({ message: 'Error creating recipe' });
+    console.error('Error searching recipes:', error);
+    res.status(500).json({ error: 'Failed to search recipes' });
   }
 });
 

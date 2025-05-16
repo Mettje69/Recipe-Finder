@@ -24,7 +24,7 @@ const recipeSchema = new mongoose.Schema({
   cookTime: {
     type: Number,
     required: true,
-    min: 1
+    min: 0
   },
   difficulty: {
     type: String,
@@ -43,8 +43,7 @@ const recipeSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    required: true,
-    trim: true
+    default: ''
   },
   author: {
     type: mongoose.Schema.Types.ObjectId,
@@ -67,8 +66,8 @@ recipeSchema.pre('save', function(next) {
   next();
 });
 
-// Index for searching recipes by ingredients
-recipeSchema.index({ ingredients: 'text' });
+// Create text indexes for searching
+recipeSchema.index({ name: 'text', description: 'text', ingredients: 'text', category: 'text' });
 
 const Recipe = mongoose.model('Recipe', recipeSchema);
 
