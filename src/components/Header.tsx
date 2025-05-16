@@ -15,7 +15,7 @@ import {
   Avatar,
   Portal
 } from '@chakra-ui/react'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { SearchIcon, StarIcon, ChevronDownIcon, AddIcon } from '@chakra-ui/icons'
 
@@ -24,6 +24,17 @@ const Header = () => {
   const borderColor = useColorModeValue('orange.100', 'gray.700')
   const titleColor = useColorModeValue('orange.500', 'orange.300')
   const { user, isAuthenticated, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogin = () => {
+    navigate('/login')
+    window.location.reload()
+  }
+
+  const handleRegister = () => {
+    navigate('/register')
+    window.location.reload()
+  }
 
   return (
     <Box 
@@ -32,24 +43,14 @@ const Header = () => {
       borderColor={borderColor}
       py={4}
       w="100%"
-      overflowX="hidden"
-      maxW="100%"
-      pr="0"
-      position="relative"
+      position="fixed"
+      top={0}
+      left={0}
+      right={0}
       zIndex={1000}
-      _before={{
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '100%',
-        background: 'linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)',
-        zIndex: 0
-      }}
       boxShadow="sm"
     >
-      <Container maxW="1280px" px={{ base: 3, md: 4 }} position="relative" zIndex={1}>
+      <Container maxW="1280px" px={{ base: 3, md: 4 }} mx="auto">
         <Flex justify="space-between" align="center">
           <Button
             as={RouterLink}
@@ -125,7 +126,7 @@ const Header = () => {
                     size="md"
                     borderRadius="full"
                   >
-                    <Avatar size="sm" name={user?.name} />
+                    <Avatar size="sm" name={user?.username} />
                   </MenuButton>
                   <Portal>
                     <MenuList zIndex={2000} position="relative">
@@ -137,8 +138,6 @@ const Header = () => {
             ) : (
               <>
                 <Button
-                  as={RouterLink}
-                  to="/login"
                   colorScheme="orange"
                   size="md"
                   borderRadius="full"
@@ -148,12 +147,11 @@ const Header = () => {
                     boxShadow: 'md'
                   }}
                   transition="all 0.2s ease-in-out"
+                  onClick={handleLogin}
                 >
                   Login
                 </Button>
                 <Button
-                  as={RouterLink}
-                  to="/register"
                   colorScheme="orange"
                   size="md"
                   borderRadius="full"
@@ -162,6 +160,7 @@ const Header = () => {
                     boxShadow: 'md'
                   }}
                   transition="all 0.2s ease-in-out"
+                  onClick={handleRegister}
                 >
                   Register
                 </Button>

@@ -1,14 +1,6 @@
-<<<<<<< HEAD
 # Recipe Finder
 
 A web application that helps you find recipes based on the ingredients you have available.
-
-## Features
-
-- Search and select ingredients from a comprehensive list
-- View recipes that can be made with your available ingredients
-- Beautiful and responsive UI built with React and Chakra UI
-- Recipe matching algorithm that suggests recipes even with partial ingredient matches
 
 ## Getting Started
 
@@ -20,13 +12,24 @@ A web application that helps you find recipes based on the ingredients you have 
 ### Installation
 
 1. Clone the repository
+```bash
+git clone https://github.com/Mettje69/Recipe-Finder.git
+```
 2. Install dependencies:
 ```bash
+npm install
+```
+```bash
+cd backend
 npm install
 ```
 
 3. Start the development server:
 ```bash
+npm run dev
+```
+```bash
+cd backend
 npm run dev
 ```
 
